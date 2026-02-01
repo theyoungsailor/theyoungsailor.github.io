@@ -312,7 +312,7 @@ async function uploadFileToBucket(file){
   const uploadPath = `/storage/v1/object/${bucketEnc}/${pathEnc}`;
 
   await supabaseFetch(uploadPath, {
-    method: "POST",
+    method: "PUT",
     headers: {
       "Content-Type": normalizeContentType(file),
       "x-upsert": "false"
