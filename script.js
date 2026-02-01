@@ -1,7 +1,7 @@
 /* script.js */
 
-const SUPABASE_URL = "COLOCA_AQUI_O_TEU_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "COLOCA_AQUI_O_TEU_SUPABASE_ANON_KEY";
+const SUPABASE_URL = "https://ofllnwwpyhhvyzuhwzzc.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_8iHaCkyT6RdrOF4Dcrf5VQ_ZLgr8zm6";
 const SUPABASE_BUCKET = "wedding-uploads";
 const SUPABASE_TABLE = "wedding_photos";
 
