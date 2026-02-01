@@ -17,20 +17,25 @@
   <main>
 
     <section class="banner-section" aria-label="Topo">
-      <img
-        class="banner-logo banner-logo--sm"
-        src="imagens/logo-head.png"
-        alt="Rita e Pedro"
-        loading="eager"
-        decoding="async"
-      />
+      <div class="banner-logo-wrap">
+        <img
+          class="banner-logo banner-logo--sm"
+          src="imagens/logo-head.png"
+          alt="Rita e Pedro"
+          loading="eager"
+          decoding="async"
+        />
+      </div>
     </section>
 
     <section class="two-col-section reveal-on" data-reveal="load" data-delay="1" id="section-2">
       <div class="left-half">
         <div class="img-swap img-swap--hover reveal-item" data-st="1" id="swapWrap-2" role="button" tabindex="0" aria-label="Ver outra versão do desenho">
           <img class="swap-base" src="imagens/outline2.2.png" alt="Ilustração" loading="eager" decoding="async" />
-          <img class="swap-overlay" src="imagens/outline1.png" alt="Ilustração (variante)" loading="eager" decoding="async" />
+
+          <div class="swap-overlay-wrap">
+            <img class="swap-overlay" src="imagens/outline1.png" alt="Ilustração (variante)" loading="eager" decoding="async" />
+          </div>
         </div>
       </div>
 
