@@ -149,82 +149,93 @@ function initQuintaModal(){
 }
 
 function initAccommodationCarousel(){
-  const section = $("#accommodation-section");
-  const carousel = $("#accCarousel");
-  if(!section || !carousel) return;
+  const root = $("#alojamento");
+  if(!root) return;
 
-  const slides = $all(".acc-slide", carousel);
-  const total = slides.length;
-  if(!total) return;
+  const track = $(".acco-track", root);
+  const slides = $all(".acco-slide", root);
+  const prev = $(".acco-prev", root);
+  const next = $(".acco-next", root);
+
+  if(!track || slides.length === 0 || !prev || !next) return;
 
   let index = 0;
-  const goTo = (i)=>{
-    index = (i + total) % total;
-    carousel.style.transform = `translateX(${(-index * 100)}%)`;
-  };
 
-  const prevBtn = $(".acc-arrow-left", section);
-  const nextBtn = $(".acc-arrow-right", section);
-
-  if(prevBtn) prevBtn.addEventListener("click", ()=> goTo(index - 1));
-  if(nextBtn) nextBtn.addEventListener("click", ()=> goTo(index + 1));
-
-  let startX = null;
-  const threshold = 40;
-
-  carousel.addEventListener("touchstart", (e)=>{
-    if(e.touches && e.touches.length === 1) startX = e.touches[0].clientX;
-  }, { passive:true });
-
-  carousel.addEventListener("touchend", (e)=>{
-    if(startX === null) return;
-    const endX = e.changedTouches[0].clientX;
-    const diff = endX - startX;
-    if(diff > threshold) goTo(index - 1);
-    else if(diff < -threshold) goTo(index + 1);
-    startX = null;
-  });
-}
-
-/* Supabase helpers (sem dependências externas) */
-async function supabaseFetch(path, options = {}){
-  const url = `${SUPABASE_URL}${path}`;
-  const headers = {
-    "apikey": SUPABASE_ANON_KEY,
-    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-    ...(options.headers || {})
-  };
-  const res = await fetch(url, { ...options, headers });
-  const text = await res.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-  if(!res.ok){
-    const msg = (data && data.message) ? data.message : `Erro (${res.status})`;
-    throw new Error(msg);
+  function update(){
+    track.style.transform = `translateX(${index * -100}%)`;
+    prev.disabled = index === 0;
+    next.disabled = index === slides.length - 1;
   }
-  return data;
+
+  prev.addEventListener("click", ()=>{
+    index = Math.max(0, index - 1);
+    update();
+  });
+
+  next.addEventListener("click", ()=>{
+    index = Math.min(slides.length - 1, index + 1);
+    update();
+  });
+
+  update();
 }
 
-function safeName(name){
-  return (name || "upload")
+async function supabaseFetch(path, { method = "GET", headers = {}, body = null } = {}){
+  const res = await fetch(`${SUPABASE_URL}${path}`, {
+    method,
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      ...headers
+    },
+    body
+  });
+
+  const ct = res.headers.get("content-type") || "";
+  const isJson = ct.includes("application/json");
+  const payload = isJson ? await res.json().catch(()=> ({})) : await res.text().catch(()=> "");
+
+  if(!res.ok){
+    let msg = "";
+    if(typeof payload === "string") msg = payload;
+    else msg = payload?.message || payload?.error || JSON.stringify(payload);
+    throw new Error(msg || `Supabase error (${res.status})`);
+  }
+
+  return payload;
+}
+
+function safeFileName(name){
+  return (name || "")
     .toLowerCase()
-    .replace(/\s+/g,"-")
-    .replace(/[^a-z0-9._-]/g,"");
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9.\-_]/g, "")
+    .replace(/\-+/g, "-")
+    .slice(0, 140);
 }
 
-function fileTooBig(file){
-  return file.size > (MAX_FILE_MB * 1024 * 1024);
+function getExt(file){
+  const n = (file?.name || "").trim();
+  const dot = n.lastIndexOf(".");
+  if(dot === -1) return "";
+  return n.slice(dot + 1).toLowerCase();
 }
 
 async function uploadFileToBucket(file){
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const base = safeName(file.name.replace(/\.[^/.]+$/, ""));
-  const stamp = Date.now();
-  const path = `uploads/${stamp}-${base}.${ext}`;
+  if(!file) throw new Error("Nenhum ficheiro selecionado.");
 
-  const uploadPath = `/storage/v1/object/${encodeURIComponent(SUPABASE_BUCKET)}/${encodeURIComponent(path)}`;
+  const sizeMb = file.size / (1024 * 1024);
+  if(sizeMb > MAX_FILE_MB) throw new Error(`Ficheiro demasiado grande. Máximo ${MAX_FILE_MB}MB.`);
 
-  await supabaseFetch(uploadPath, {
+  if(ACCEPTED_TYPES.length && file.type && !ACCEPTED_TYPES.includes(file.type)){
+    throw new Error("Formato não suportado. Usa JPG, PNG, WEBP ou HEIC.");
+  }
+
+  const ext = getExt(file) || (file.type === "image/png" ? "png" : "jpg");
+  const base = safeFileName(file.name.replace(/\.[^/.]+$/, ""));
+  const path = `uploads/${Date.now()}-${base}.${ext}`;
+
+  await supabaseFetch(`/storage/v1/object/${SUPABASE_BUCKET}/${encodeURIComponent(path)}`, {
     method: "POST",
     headers: {
       "Content-Type": file.type || "application/octet-stream",
@@ -240,10 +251,12 @@ function publicUrlFor(path){
   return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/${path}`;
 }
 
-async function insertPhotoRow({ path, title }){
+/* UPDATED: now stores public_url as well */
+async function insertPhotoRow({ path, title, public_url }){
   const body = [{
     path,
-    title: title || null
+    title: title || null,
+    public_url: public_url || null
   }];
 
   const data = await supabaseFetch(`/rest/v1/${SUPABASE_TABLE}`, {
@@ -284,209 +297,164 @@ function renderGallery(items){
       node = tpl.content.firstElementChild.cloneNode(true);
       const img = $(".ugc-card-img", node);
       const t = $(".ugc-card-title", node);
-      const btn = $(".ugc-card-btn", node);
+      const a = $(".ugc-card-link", node);
+
       if(img){
         img.src = url;
         img.alt = title || "Foto";
+        img.loading = "lazy";
+        img.decoding = "async";
       }
       if(t) t.textContent = title;
-      if(btn){
-        btn.addEventListener("click", ()=> openPreview(url, title));
+      if(a){
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener";
       }
     }else{
-      node = document.createElement("article");
-      node.className = "ugc-card";
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "ugc-card-btn";
+      node = document.createElement("a");
+      node.href = url;
+      node.target = "_blank";
+      node.rel = "noopener";
+      node.className = "ugc-card-link";
       const img = document.createElement("img");
-      img.className = "ugc-card-img";
-      img.loading = "lazy";
-      img.decoding = "async";
       img.src = url;
       img.alt = title || "Foto";
-      const span = document.createElement("span");
-      span.className = "ugc-card-title";
-      span.textContent = title;
-      btn.appendChild(img);
-      btn.appendChild(span);
-      btn.addEventListener("click", ()=> openPreview(url, title));
-      node.appendChild(btn);
+      img.loading = "lazy";
+      img.decoding = "async";
+      node.appendChild(img);
     }
 
     grid.appendChild(node);
   });
 }
 
-/* Preview modal (reutiliza o modal da Quinta para evitar duplicar CSS) */
-function openPreview(url, title){
-  const modal = $("#quintaModal");
-  const img = modal ? $(".quinta-modal-img", modal) : null;
-  if(!modal || !img) return;
-  img.src = url;
-  img.alt = title || "Foto";
-  openModal(modal);
-}
-
-/* UGC */
 function initUGC(){
   const openBtn = $("[data-open-upload]");
   const modal = $("#ugcModal");
-  const closeBtn = modal ? $(".ugc-modal-close", modal) : null;
-  const drop = modal ? $("[data-dropzone]", modal) : null;
+  const closeBtn = $("[data-close-ugc]");
+  const drop = $("#ugcDrop");
   const fileInput = $("#ugcFile");
-  const sortBtn = $(".ugc-sort-btn");
-  const prevBtn = modal ? $("[data-prev]", modal) : null;
-  const nextBtn = modal ? $("[data-next]", modal) : null;
+  const orderSelect = $("#ugcOrder");
+  const refreshBtn = $("#ugcRefresh");
+  const clearBtn = $("#ugcClear");
+  const saveBtn = $("#ugcSave");
+  const titleInput = $("#ugcTitle");
 
-  if(!modal || !openBtn || !drop || !fileInput) return;
+  if(!modal || !fileInput) return;
 
-  let sortMode = "latest";
   let selectedFiles = [];
-  let step = 1;
 
-  function setStep(n){
-    step = n;
-    const steps = $all(".ugc-step", modal);
-    steps.forEach((s, i)=>{
-      s.classList.toggle("is-active", i === (step - 1));
-    });
-    if(prevBtn) prevBtn.disabled = step <= 1;
-    if(nextBtn) nextBtn.disabled = step >= 2;
+  function syncSaveState(){
+    if(saveBtn) saveBtn.disabled = selectedFiles.length === 0;
   }
 
-  function resetFlow(){
+  function open(){
+    openModal(modal);
+    setStatus("", "");
+  }
+
+  function close(){
+    closeModal(modal);
     selectedFiles = [];
-    fileInput.value = "";
-    setStatus("");
-    setStep(1);
+    if(fileInput) fileInput.value = "";
+    if(titleInput) titleInput.value = "";
+    syncSaveState();
   }
 
-  function validateFiles(files){
-    const ok = [];
-    for(const f of files){
-      if(!ACCEPTED_TYPES.includes(f.type)){
-        setStatus("Formato não suportado. Usa JPG, PNG ou WEBP.", "error");
-        continue;
+  openBtn?.addEventListener("click", open);
+  closeBtn?.addEventListener("click", close);
+
+  modal.addEventListener("click", (e)=>{
+    if(e.target === modal) close();
+  });
+
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape" && modal.classList.contains("is-open")) close();
+  });
+
+  if(drop){
+    drop.addEventListener("click", ()=> fileInput.click());
+
+    drop.addEventListener("dragover", (e)=>{
+      e.preventDefault();
+      drop.classList.add("is-drag");
+    });
+
+    drop.addEventListener("dragleave", ()=>{
+      drop.classList.remove("is-drag");
+    });
+
+    drop.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      drop.classList.remove("is-drag");
+      const files = Array.from(e.dataTransfer.files || []);
+      if(files.length){
+        selectedFiles = files;
+        setStatus(`${files.length} ficheiro(s) selecionado(s).`, "ok");
+        syncSaveState();
       }
-      if(fileTooBig(f)){
-        setStatus(`Ficheiro demasiado grande. Máximo ${MAX_FILE_MB}MB.`, "error");
-        continue;
-      }
-      ok.push(f);
-    }
-    return ok;
+    });
   }
+
+  fileInput.addEventListener("change", ()=>{
+    selectedFiles = Array.from(fileInput.files || []);
+    if(selectedFiles.length) setStatus(`${selectedFiles.length} ficheiro(s) selecionado(s).`, "ok");
+    else setStatus("", "");
+    syncSaveState();
+  });
 
   async function refresh(){
     try{
-      const items = await fetchPhotos({ order: sortMode });
+      const order = orderSelect?.value || "latest";
+      const items = await fetchPhotos({ order });
       renderGallery(items);
     }catch(err){
+      console.error(err);
       setStatus("Não foi possível carregar a galeria. Confirma a tabela e permissões.", "error");
     }
   }
 
-  openBtn.addEventListener("click", ()=>{
-    resetFlow();
-    openModal(modal);
+  refreshBtn?.addEventListener("click", refresh);
+  clearBtn?.addEventListener("click", ()=>{
+    selectedFiles = [];
+    if(fileInput) fileInput.value = "";
+    if(titleInput) titleInput.value = "";
+    setStatus("", "");
+    syncSaveState();
   });
 
-  if(closeBtn){
-    closeBtn.addEventListener("click", ()=> closeModal(modal));
-  }
+  saveBtn?.addEventListener("click", async ()=>{
+    if(selectedFiles.length === 0) return;
 
-  modal.addEventListener("click", (e)=>{
-    if(e.target === modal) closeModal(modal);
-  });
+    setStatus("A enviar...", "");
+    saveBtn.disabled = true;
 
-  document.addEventListener("keydown", (e)=>{
-    if(e.key === "Escape" && modal.classList.contains("is-open")) closeModal(modal);
-  });
-
-  drop.addEventListener("dragover", (e)=>{
-    e.preventDefault();
-    drop.classList.add("is-dragover");
-  });
-
-  drop.addEventListener("dragleave", ()=>{
-    drop.classList.remove("is-dragover");
-  });
-
-  drop.addEventListener("drop", (e)=>{
-    e.preventDefault();
-    drop.classList.remove("is-dragover");
-    const files = Array.from(e.dataTransfer.files || []);
-    const ok = validateFiles(files);
-    if(ok.length){
-      selectedFiles = ok;
-      setStatus(`${ok.length} ficheiro(s) selecionado(s).`, "ok");
-      setStep(2);
-    }
-  });
-
-  fileInput.addEventListener("change", ()=>{
-    const files = Array.from(fileInput.files || []);
-    const ok = validateFiles(files);
-    if(ok.length){
-      selectedFiles = ok;
-      setStatus(`${ok.length} ficheiro(s) selecionado(s).`, "ok");
-      setStep(2);
-    }
-  });
-
-  if(prevBtn){
-    prevBtn.addEventListener("click", ()=> setStep(1));
-  }
-
-  if(nextBtn){
-    nextBtn.addEventListener("click", async ()=>{
-      if(step === 1){
-        setStep(2);
-        return;
+    try{
+      for(const file of selectedFiles){
+        const path = await uploadFileToBucket(file);
+        const publicUrl = publicUrlFor(path);
+        await insertPhotoRow({ path, title: titleInput?.value || "", public_url: publicUrl });
       }
 
-      if(!selectedFiles.length){
-        setStatus("Escolhe pelo menos uma imagem.", "error");
-        return;
-      }
+      selectedFiles = [];
+      if(fileInput) fileInput.value = "";
+      if(titleInput) titleInput.value = "";
 
-      setStatus("A enviar...", "");
-      nextBtn.disabled = true;
-
-      try{
-        for(const file of selectedFiles){
-          const path = await uploadFileToBucket(file);
-          const publicUrl = publicUrlFor(path);
-          await insertPhotoRow({ path, title: "" , public_url: publicUrl });
-        }
-        setStatus("Enviado com sucesso. A atualizar galeria...", "ok");
-        await refresh();
-        setTimeout(()=>{
-          closeModal(modal);
-          nextBtn.disabled = false;
-        }, 650);
-      }catch(err){
-        setStatus(`Erro no upload. ${err.message || ""}`.trim(), "error");
-        nextBtn.disabled = false;
-      }
-    });
-  }
-
-  if(sortBtn){
-    sortBtn.addEventListener("click", async ()=>{
-      sortMode = (sortMode === "latest") ? "oldest" : "latest";
-      sortBtn.setAttribute("data-sort", sortMode);
-      sortBtn.childNodes.forEach(()=>{});
-      sortBtn.firstChild.textContent = sortMode === "latest" ? "Latest " : "Oldest ";
+      setStatus("Enviado com sucesso. A atualizar galeria...", "ok");
       await refresh();
-    });
-  }
+      setStatus("Obrigado. A foto já está na galeria.", "ok");
+    }catch(err){
+      console.error(err);
+      setStatus(`Falha no envio: ${err.message || err}`, "error");
+    }finally{
+      syncSaveState();
+    }
+  });
 
   refresh();
 }
 
-/* Arranque */
 document.addEventListener("DOMContentLoaded", ()=>{
   initReveal();
   initImgSwap();
