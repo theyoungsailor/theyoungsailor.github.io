@@ -1037,3 +1037,9 @@ p,li,small,span,label{
   .acc-arrow-left{left:8px}
   .acc-arrow-right{right:8px}
 }
+@media (max-width:620px){
+  .img-swap .swap-overlay{
+    transform:scale(.92,.78);
+  }
+}
+
