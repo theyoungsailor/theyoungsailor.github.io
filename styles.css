@@ -1226,65 +1226,31 @@ main {
   margin:18px auto 0;
 }
 
-.img-swap{
-  position:relative;
-  width:min(520px,92%);
-  margin:0 auto;
+.img-swap{ position: relative; }
 
-  height:clamp(260px,48vh,480px);
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  overflow:visible;
-
-  --ov-scale: 0.93;
-  --ov-shift-y: 2%;
+.img-swap > .swap-base,
+.img-swap > .swap-overlay-wrap > .swap-overlay{
+  object-fit: contain;
+  object-position: center bottom; /* importante */
 }
 
-.img-swap > .swap-base{
-  position:absolute;
-  inset:0;
-  z-index:1;
-
-  width:100%;
-  height:100%;
-
-  object-fit:contain;
-  object-position:center bottom;
-
-  display:block;
+/* Ajuste fino do overlay */
+.img-swap{
+  --ov-scale: 0.93;     /* baixa um pouco (testa 0.90 a 0.98) */
+  --ov-shift-y: 2%;     /* desce (testa -3% a 6%) */
 }
 
 .img-swap > .swap-overlay-wrap{
-  position:absolute;
-  inset:0;
-  z-index:2;
-
-  pointer-events:none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .img-swap > .swap-overlay-wrap > .swap-overlay{
-  width:100%;
-  height:100%;
-
-  object-fit:contain;
-  object-position:center bottom;
-
-  display:block;
-
+  width: 100%;
+  height: 100%;
   transform: translateY(var(--ov-shift-y)) scale(var(--ov-scale));
   transform-origin: center bottom;
-}
-
-@media (max-width:620px){
-  .img-swap{
-    width:min(420px,96%);
-    height:clamp(220px,40vh,340px);
-
-    --ov-scale: 0.92;
-    --ov-shift-y: 3%;
-  }
 }
 
