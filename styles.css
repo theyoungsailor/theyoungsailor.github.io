@@ -296,9 +296,8 @@ p,li,small,span,label{
   width:max-content;
 }
 
-/* Hero CTA spacing */
-.two-col-section .right-half .form-btn{
-  margin-top:clamp(16px,2.4vw,28px);
+.right-half .form-btn{
+  margin-top:14px;
 }
 
 .details-section{
@@ -1049,6 +1048,11 @@ p,li,small,span,label{
 
   .acc-arrow-left{left:8px}
   .acc-arrow-right{right:8px}
+
+  .form-btn{
+    display:flex;
+    margin:16px auto 0;
+  }
 }
 @media (max-width:620px){
   .img-swap .swap-overlay{
@@ -1076,7 +1080,7 @@ p,li,small,span,label{
   position:absolute;
   width:var(--size);
   height:var(--size);
-  background-image:var(--daisy-url, none);
+  background-image:url("imagens/daisy.png");
   background-size:contain;
   background-repeat:no-repeat;
   background-position:center;
