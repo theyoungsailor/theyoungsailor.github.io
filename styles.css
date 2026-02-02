@@ -1225,3 +1225,58 @@ main {
   text-align:left;
   margin:18px auto 0;
 }
+
+.img-swap{
+  position:relative;
+  width:min(520px,92%);
+  margin:0 auto;
+
+  height:clamp(260px,48vh,480px);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  overflow:visible;
+}
+
+.img-swap > .swap-base{
+  position:absolute;
+  inset:0;
+  z-index:1;
+
+  width:100%;
+  height:100%;
+
+  object-fit:contain;
+  object-position:center;
+
+  display:block;
+}
+
+.img-swap > .swap-overlay-wrap{
+  position:absolute;
+  inset:0;
+  z-index:2;
+
+  pointer-events:none;
+}
+
+.img-swap > .swap-overlay-wrap > .swap-overlay{
+  width:100%;
+  height:100%;
+
+  object-fit:contain;
+  object-position:center;
+
+  display:block;
+}
+
+/* Mobile */
+@media (max-width:620px){
+  .img-swap{
+    width:min(420px,96%);
+    height:clamp(220px,40vh,340px);
+  }
+}
+
