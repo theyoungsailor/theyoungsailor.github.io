@@ -1,47 +1,8 @@
 (function(){
   "use strict";
 
-  const CONFIG = {
-    detailsUrl: "../pages/casamento",
-    assets: {
-      envelopeFront: "../imagens/envelope-front1.png",
-      envelopeBack: "../imagens/envelope-back-filled1.png",
-      envelopePiece: "../imagens/envelope-piece.png",
-      inviteOuter: "../imagens/outer-front.png",
-      innerFront: "../imagens/inner-fron1.png",
-      innerBack: "../imagens/inner-back1.png",
-      restartIcon: "../imagens/restart.png",
-      hintArrow: "../imagens/arrow.png",
-      daisies: [
-        "../imagens/daisy.png",
-        "../imagens/daisy1.png",
-        "../imagens/daisy2.png"
-      ]
-    },
-    daisy: {
-      maxOnScreen: 18,
-      spawnEveryMs: 420,
-      fadeInMs: 700,
-      holdMs: 2600,
-      fadeOutMs: 900,
-      minSize: 22,
-      maxSize: 64,
-      driftPx: 26,
-      rotateDeg: 28,
-      avoidDistancePx: 54
-    }
-  };
-
   function absUrl(rel){
     return new URL(rel, document.baseURI).href;
-  }
-
-  function preload(urls){
-    urls.forEach((u) => {
-      if(!u) return;
-      const img = new Image();
-      img.src = absUrl(u);
-    });
   }
 
   function prefersReducedMotion(){
@@ -60,53 +21,49 @@
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  function safeLocalStorageGet(key){
+  function safeGet(key){
     try{ return localStorage.getItem(key); }catch(e){ return null; }
   }
-
-  function safeLocalStorageSet(key, val){
+  function safeSet(key, val){
     try{ localStorage.setItem(key, val); }catch(e){}
   }
-
-  function safeLocalStorageRemove(key){
+  function safeRemove(key){
     try{ localStorage.removeItem(key); }catch(e){}
   }
 
   function initDaisies(){
-    const layer = document.getElementById("daisy-layer");
+    var layer = document.getElementById("daisy-layer");
     if(!layer) return;
 
-    const sources = (CONFIG.assets.daisies || []).map(absUrl);
-    const fallback = absUrl("../imagens/daisy.png");
+    var reduced = prefersReducedMotion();
+    var spawnEvery = reduced ? 1200 : 420;
+    var maxOnScreen = reduced ? 8 : 18;
 
-    const getSrc = () => {
-      const c = sources.length ? pick(sources) : fallback;
-      return c || fallback;
-    };
+    var sources = [
+      "../imagens/daisy.png",
+      "../imagens/daisy1.png",
+      "../imagens/daisy2.png"
+    ].map(absUrl);
 
-    const reduced = prefersReducedMotion();
-    const spawnEvery = reduced ? 1200 : CONFIG.daisy.spawnEveryMs;
-    const maxOnScreen = reduced ? 8 : CONFIG.daisy.maxOnScreen;
-
-    const active = [];
-    const positions = [];
+    var active = [];
+    var positions = [];
 
     function farEnough(x, y, dist){
-      for(let i = 0; i < positions.length; i++){
-        const p = positions[i];
-        const dx = p.x - x;
-        const dy = p.y - y;
-        if(Math.hypot(dx, dy) < dist) return false;
+      for(var i = 0; i < positions.length; i++){
+        var p = positions[i];
+        var dx = p.x - x;
+        var dy = p.y - y;
+        if(Math.sqrt(dx*dx + dy*dy) < dist) return false;
       }
       return true;
     }
 
     function cleanup(){
-      const now = performance.now();
-      for(let i = active.length - 1; i >= 0; i--){
-        const it = active[i];
-        if(now >= it.deadAt){
-          if(it.el && it.el.parentNode) it.el.parentNode.removeChild(it.el);
+      var now = performance.now();
+      for(var i = active.length - 1; i >= 0; i--){
+        if(now >= active[i].deadAt){
+          var el = active[i].el;
+          if(el && el.parentNode) el.parentNode.removeChild(el);
           active.splice(i, 1);
           positions.splice(i, 1);
         }
@@ -117,138 +74,114 @@
       cleanup();
       if(active.length >= maxOnScreen) return;
 
-      const w = window.innerWidth || 1024;
-      const h = window.innerHeight || 768;
+      var w = window.innerWidth || 1024;
+      var h = window.innerHeight || 768;
 
-      const size = rand(CONFIG.daisy.minSize, CONFIG.daisy.maxSize);
-      const pad = clamp(size * 0.6, 16, 42);
+      var size = rand(22, 64);
+      var pad = clamp(size * 0.6, 16, 42);
 
-      let tries = 0;
-      let x = 0;
-      let y = 0;
+      var tries = 0;
+      var x = 0;
+      var y = 0;
 
       while(tries < 14){
         x = rand(pad, w - pad);
         y = rand(pad, h - pad);
-        if(farEnough(x, y, CONFIG.daisy.avoidDistancePx)) break;
+        if(farEnough(x, y, 54)) break;
         tries += 1;
       }
 
-      const el = document.createElement("img");
+      var el = document.createElement("img");
       el.className = "daisy";
       el.alt = "";
+      el.setAttribute("aria-hidden","true");
       el.decoding = "async";
       el.loading = "lazy";
       el.draggable = false;
-      el.setAttribute("aria-hidden", "true");
-      el.src = getSrc();
-      el.style.width = `${Math.round(size)}px`;
-      el.style.height = `${Math.round(size)}px`;
+      el.src = pick(sources);
 
-      const driftX = rand(-CONFIG.daisy.driftPx, CONFIG.daisy.driftPx);
-      const driftY = rand(-CONFIG.daisy.driftPx, CONFIG.daisy.driftPx);
-      const rotDir = Math.random() < 0.5 ? -1 : 1;
-      const rot = rotDir * rand(CONFIG.daisy.rotateDeg * 0.45, CONFIG.daisy.rotateDeg);
-
-      const fadeIn = reduced ? 1 : CONFIG.daisy.fadeInMs;
-      const hold = reduced ? 1 : CONFIG.daisy.holdMs;
-      const fadeOut = reduced ? 1 : CONFIG.daisy.fadeOutMs;
-      const total = fadeIn + hold + fadeOut;
-
-      el.style.left = `${x}px`;
-      el.style.top = `${y}px`;
+      el.style.width = Math.round(size) + "px";
+      el.style.height = Math.round(size) + "px";
+      el.style.left = x + "px";
+      el.style.top = y + "px";
 
       layer.appendChild(el);
 
-      const startAt = performance.now();
-      const deadAt = startAt + total + 120;
+      var driftX = rand(-26, 26);
+      var driftY = rand(-26, 26);
+      var rotDir = Math.random() < 0.5 ? -1 : 1;
+      var rot = rotDir * rand(12, 28);
 
-      positions.push({ x, y });
+      var fadeIn = reduced ? 1 : 700;
+      var hold = reduced ? 1 : 2600;
+      var fadeOut = reduced ? 1 : 900;
+      var total = fadeIn + hold + fadeOut;
+
+      var startAt = performance.now();
+      var deadAt = startAt + total + 120;
+
+      positions.push({ x: x, y: y });
 
       function tick(now){
-        const t = now - startAt;
+        var t = now - startAt;
 
-        let opacity = 1;
+        var opacity = 1;
         if(t <= fadeIn){
-          opacity = fadeIn <= 1 ? 1 : t / fadeIn;
+          opacity = fadeIn <= 1 ? 1 : (t / fadeIn);
         }else if(t <= fadeIn + hold){
           opacity = 1;
         }else{
-          const u = (t - fadeIn - hold) / fadeOut;
-          opacity = 1 - clamp(u, 0, 1);
+          var u = (t - fadeIn - hold) / fadeOut;
+          u = clamp(u, 0, 1);
+          opacity = 1 - u;
         }
 
-        const p = clamp(t / total, 0, 1);
-        const tx = driftX * p;
-        const ty = driftY * p;
-        const r = rot * p;
+        var p = clamp(t / total, 0, 1);
+        var tx = driftX * p;
+        var ty = driftY * p;
+        var r = rot * p;
 
         el.style.opacity = String(opacity);
-        el.style.transform = `translate3d(${tx}px, ${ty}px, 0) rotate(${r}deg)`;
+        el.style.transform = "translate3d(" + tx + "px," + ty + "px,0) rotate(" + r + "deg)";
 
-        if(now < deadAt){
-          requestAnimationFrame(tick);
-        }
+        if(now < deadAt) requestAnimationFrame(tick);
       }
 
       requestAnimationFrame(tick);
-      active.push({ el, deadAt });
+      active.push({ el: el, deadAt: deadAt });
     }
 
-    const interval = window.setInterval(spawn, spawnEvery);
+    setInterval(spawn, spawnEvery);
 
-    window.addEventListener("resize", () => {
-      cleanup();
-      if(active.length > maxOnScreen){
-        for(let i = active.length - 1; i >= maxOnScreen; i--){
-          const it = active[i];
-          if(it.el && it.el.parentNode) it.el.parentNode.removeChild(it.el);
-          active.splice(i, 1);
-          positions.splice(i, 1);
-        }
-      }
-    }, { passive: true });
-
-    for(let i = 0; i < Math.min(6, maxOnScreen); i++){
-      window.setTimeout(spawn, i * 90);
+    for(var i = 0; i < Math.min(6, maxOnScreen); i++){
+      setTimeout(spawn, i * 90);
     }
-
-    preload([fallback, ...sources]);
-
-    return () => window.clearInterval(interval);
   }
 
   function initInvite(){
-    const root = document.getElementById("interactive-invite");
+    var root = document.getElementById("interactive-invite");
     if(!root) return;
 
-    if(root.getAttribute("data-details-url") === "../pages/casamento"){
-      root.setAttribute("data-details-url", CONFIG.detailsUrl);
-    }
+    var detailsUrl = root.getAttribute("data-details-url") || "";
+    var mainBtn = root.querySelector("[data-main-btn]");
+    var mainLabel = root.querySelector(".ii__btn-label");
+    var restartBtn = root.querySelector("[data-restart-btn]");
 
-    const detailsUrl = root.getAttribute("data-details-url") || "";
+    var envelopeWrap = root.querySelector(".ii__envelope");
+    var outerLayer = root.querySelector('[data-draggable="outer"]');
+    var innerLayer = root.querySelector('[data-draggable="inner"]');
 
-    const envelopeBtn = root.querySelector("[data-envelope-btn]");
-    const envelopeWrap = root.querySelector(".ii__envelope");
-    const openBtn = root.querySelector("[data-open-btn]");
-    const openLabel = openBtn ? openBtn.querySelector(".ii__btn-label") : null;
-    const restartBtn = root.querySelector("[data-restart-btn]");
+    var hintDrag = root.querySelector("[data-hint-drag]");
+    var hintTap = root.querySelector("[data-hint-tap]");
 
-    const outerLayer = root.querySelector('[data-draggable="outer"]');
-    const innerLayer = root.querySelector('[data-draggable="inner"]');
+    var state = "front";
+    var countdownTimer = null;
+    var countdownLeft = 0;
 
-    const hintDrag = root.querySelector("[data-hint-drag]");
-    const hintTap = root.querySelector("[data-hint-tap]");
+    var keyDrag = "ii_invite_hint_drag_done";
+    var keyTap  = "ii_invite_hint_tap_done";
 
-    const envelopePiece = root.querySelector("[data-envelope-piece]");
-
-    const keyDrag = "ii_invite_hint_drag_done";
-    const keyTap  = "ii_invite_hint_tap_done";
-
-    let state = "front";
-    let countdownTimer = null;
-    let countdownLeft = 0;
-    const openTimers = [];
+    var openTimers = [];
 
     function clearOpenTimers(){
       while(openTimers.length){
@@ -262,6 +195,17 @@
       if(next === "ready") applyHintVisibility();
     }
 
+    function setButton(label, disabled){
+      mainLabel.textContent = label;
+      if(disabled){
+        mainBtn.classList.add("is-disabled");
+        mainBtn.setAttribute("disabled","disabled");
+      }else{
+        mainBtn.classList.remove("is-disabled");
+        mainBtn.removeAttribute("disabled");
+      }
+    }
+
     function clearCountdown(){
       if(countdownTimer){
         clearInterval(countdownTimer);
@@ -269,37 +213,24 @@
       }
     }
 
-    function setButton(label, disabled){
-      if(openLabel) openLabel.textContent = label;
-      if(!openBtn) return;
-
-      if(disabled){
-        openBtn.classList.add("is-disabled");
-        openBtn.setAttribute("disabled", "disabled");
-      }else{
-        openBtn.classList.remove("is-disabled");
-        openBtn.removeAttribute("disabled");
-      }
-    }
-
     function startCountdown(seconds){
       clearCountdown();
       countdownLeft = seconds;
-      setButton(`Details (${countdownLeft})`, true);
+      setButton("Detalhes (" + countdownLeft + ")", true);
 
-      countdownTimer = setInterval(() => {
+      countdownTimer = setInterval(function(){
         countdownLeft -= 1;
         if(countdownLeft <= 0){
           clearCountdown();
-          setButton("Details", false);
+          setButton("Detalhes", false);
           return;
         }
-        setButton(`Details (${countdownLeft})`, true);
+        setButton("Detalhes (" + countdownLeft + ")", true);
       }, 1000);
     }
 
     function resetTransforms(){
-      [outerLayer, innerLayer].forEach((el) => {
+      [outerLayer, innerLayer].forEach(function(el){
         if(!el) return;
         el.style.transform = "";
         el.dataset.tx = "0";
@@ -317,9 +248,8 @@
         return;
       }
 
-      const dragDone = safeLocalStorageGet(keyDrag) === "1";
-      const tapDone  = safeLocalStorageGet(keyTap) === "1";
-
+      var dragDone = safeGet(keyDrag) === "1";
+      var tapDone = safeGet(keyTap) === "1";
       hintDrag.classList.toggle("is-hidden", dragDone);
       hintTap.classList.toggle("is-hidden", tapDone);
     }
@@ -327,110 +257,95 @@
     function markDragDone(){
       if(!hintDrag) return;
       hintDrag.classList.add("is-hidden");
-      safeLocalStorageSet(keyDrag, "1");
+      safeSet(keyDrag, "1");
     }
 
     function markTapDone(){
       if(!hintTap) return;
       hintTap.classList.add("is-hidden");
-      safeLocalStorageSet(keyTap, "1");
+      safeSet(keyTap, "1");
     }
 
     function resetHintsOnRestart(){
-      safeLocalStorageRemove(keyDrag);
-      safeLocalStorageRemove(keyTap);
+      safeRemove(keyDrag);
+      safeRemove(keyTap);
       applyHintVisibility(true);
     }
 
-    function ensureEnvelopePiece(){
-      if(!envelopePiece) return;
-      const pieceUrl = envelopePiece.getAttribute("src") || "";
-      if(!pieceUrl){
-        envelopePiece.classList.add("ii__debug-hide");
-        return;
-      }
-      const img = new Image();
-      img.onerror = () => { envelopePiece.classList.add("ii__debug-hide"); };
-      img.src = absUrl(pieceUrl);
+    function preload(urls){
+      urls.forEach(function(u){
+        if(!u) return;
+        var img = new Image();
+        img.src = u;
+      });
     }
 
-    function showOpenButton(show){
-      if(!openBtn) return;
-      openBtn.hidden = !show;
-    }
-
-    function setEnvelopeFlipped(flipped){
-      if(!envelopeWrap) return;
-      envelopeWrap.classList.toggle("is-flipped", !!flipped);
-    }
+    preload([
+      absUrl("../imagens/envelope-front1.png"),
+      absUrl("../imagens/envelope-back-filled1.png"),
+      absUrl("../imagens/envelope-piece.png"),
+      absUrl("../imagens/outer-front.png"),
+      absUrl("../imagens/inner-front.png"),
+      absUrl("../imagens/inner-back.png"),
+      absUrl("../imagens/restart.png"),
+      absUrl("../imagens/arrow.png")
+    ]);
 
     function goFront(){
       clearOpenTimers();
       clearCountdown();
 
       setState("front");
-      setEnvelopeFlipped(false);
-      showOpenButton(false);
 
-      if(envelopeWrap){
-        envelopeWrap.classList.remove("ii__debug-hide", "ii__envelope--behind");
-        envelopeWrap.style.animation = "none";
-        void envelopeWrap.offsetHeight;
-        envelopeWrap.style.animation = "";
-      }
+      envelopeWrap.classList.remove("is-flipped");
+      envelopeWrap.classList.remove("ii__debug-hide");
+      envelopeWrap.classList.remove("ii__envelope--behind");
+
+      envelopeWrap.style.animation = "none";
+      envelopeWrap.offsetHeight;
+      envelopeWrap.style.animation = "";
 
       resetTransforms();
       resetHintsOnRestart();
 
-      setButton("Open", false);
+      setButton("Virar", false);
       if(restartBtn) restartBtn.hidden = true;
     }
 
     function goBack(){
       setState("back");
-      setEnvelopeFlipped(true);
-      setButton("Open", false);
-      showOpenButton(true);
+      envelopeWrap.classList.add("is-flipped");
+      setButton("Abrir", false);
       if(restartBtn) restartBtn.hidden = true;
     }
 
     function openEnvelope(){
       clearOpenTimers();
-
       setState("opening");
-      showOpenButton(true);
-      setButton("Details (10)", true);
-
       if(restartBtn) restartBtn.hidden = false;
 
       startCountdown(10);
 
-      if(envelopeWrap){
-        envelopeWrap.classList.remove("ii__debug-hide", "ii__envelope--behind");
-        envelopeWrap.style.animation = "none";
-        void envelopeWrap.offsetHeight;
-        envelopeWrap.style.animation = "";
+      envelopeWrap.classList.remove("ii__debug-hide");
+      envelopeWrap.classList.remove("ii__envelope--behind");
 
-        openTimers.push(setTimeout(() => {
-          envelopeWrap.classList.add("ii__envelope--behind");
-        }, 560));
+      envelopeWrap.style.animation = "none";
+      envelopeWrap.offsetHeight;
+      envelopeWrap.style.animation = "";
 
-        openTimers.push(setTimeout(() => {
-          setState("revealed");
-        }, 720));
+      openTimers.push(setTimeout(function(){
+        envelopeWrap.classList.add("ii__envelope--behind");
+      }, 560));
 
-        openTimers.push(setTimeout(() => {
-          envelopeWrap.classList.add("ii__debug-hide");
-          envelopeWrap.classList.remove("ii__envelope--behind");
-          setState("ready");
-          showOpenButton(true);
-          setButton("Details", false);
-        }, 1500));
-      }else{
+      openTimers.push(setTimeout(function(){
+        setState("revealed");
+      }, 720));
+
+      openTimers.push(setTimeout(function(){
+        envelopeWrap.classList.add("ii__debug-hide");
+        envelopeWrap.classList.remove("ii__envelope--behind");
         setState("ready");
-        showOpenButton(true);
-        setButton("Details", false);
-      }
+      }, 1500));
     }
 
     function goDetails(){
@@ -438,33 +353,55 @@
       window.location.href = detailsUrl;
     }
 
-    const DRAG_THRESHOLD = 5;
+    mainBtn.addEventListener("click", function(){
+      if(mainBtn.hasAttribute("disabled")) return;
+
+      if(state === "front"){
+        goBack();
+        return;
+      }
+      if(state === "back"){
+        openEnvelope();
+        return;
+      }
+      if(state === "ready"){
+        goDetails();
+        return;
+      }
+    });
+
+    if(restartBtn){
+      restartBtn.addEventListener("click", function(){
+        goFront();
+      });
+    }
+
+    var DRAG_THRESHOLD = 5;
 
     function makeDraggable(el, opts){
       if(!el) return;
-
-      const allowTapFlip = !!(opts && opts.allowTapFlip);
-      const onTapFlip = (opts && opts.onTapFlip) ? opts.onTapFlip : () => {};
-      const onFirstDrag = (opts && opts.onFirstDrag) ? opts.onFirstDrag : () => {};
-      const onFirstTap = (opts && opts.onFirstTap) ? opts.onFirstTap : () => {};
+      var allowTapFlip = !!(opts && opts.allowTapFlip);
+      var onTapFlip = (opts && opts.onTapFlip) ? opts.onTapFlip : function(){};
+      var onFirstDrag = (opts && opts.onFirstDrag) ? opts.onFirstDrag : function(){};
+      var onFirstTap = (opts && opts.onFirstTap) ? opts.onFirstTap : function(){};
 
       el.dataset.tx = el.dataset.tx || "0";
       el.dataset.ty = el.dataset.ty || "0";
 
-      let pointerId = null;
-      let startX = 0, startY = 0;
-      let baseX = 0, baseY = 0;
-      let isDown = false;
-      let isDragging = false;
-      let dragNotified = false;
+      var pointerId = null;
+      var startX = 0, startY = 0;
+      var baseX = 0, baseY = 0;
+      var isDown = false;
+      var isDragging = false;
+      var dragNotified = false;
 
       function applyTransform(x, y){
-        el.style.transform = `translate(${x}px, ${y}px)`;
+        el.style.transform = "translate(" + x + "px," + y + "px)";
         el.dataset.tx = String(x);
         el.dataset.ty = String(y);
       }
 
-      el.addEventListener("pointerdown", (e) => {
+      el.addEventListener("pointerdown", function(e){
         if(state !== "ready" && state !== "revealed") return;
 
         pointerId = e.pointerId;
@@ -477,15 +414,15 @@
         baseX = parseFloat(el.dataset.tx || "0") || 0;
         baseY = parseFloat(el.dataset.ty || "0") || 0;
 
-        try{ el.setPointerCapture(pointerId); }catch(err){}
+        el.setPointerCapture(pointerId);
       });
 
-      el.addEventListener("pointermove", (e) => {
+      el.addEventListener("pointermove", function(e){
         if(!isDown) return;
         if(e.pointerId !== pointerId) return;
 
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
+        var dx = e.clientX - startX;
+        var dy = e.clientY - startY;
 
         if(!isDragging){
           if(Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD){
@@ -504,7 +441,7 @@
         }
       }, { passive: false });
 
-      el.addEventListener("pointerup", (e) => {
+      el.addEventListener("pointerup", function(e){
         if(!isDown) return;
         if(e.pointerId !== pointerId) return;
 
@@ -516,91 +453,27 @@
         }
       });
 
-      el.addEventListener("pointercancel", (e) => {
+      el.addEventListener("pointercancel", function(e){
         if(e.pointerId !== pointerId) return;
         isDown = false;
         isDragging = false;
       });
     }
 
-    function wireEnvelopeToggle(){
-      if(!envelopeBtn) return;
-
-      envelopeBtn.addEventListener("click", () => {
-        if(state === "opening" || state === "revealed" || state === "ready") return;
-        if(state === "front"){ goBack(); return; }
-        if(state === "back"){ goFront(); return; }
-      });
-
-      envelopeBtn.addEventListener("keydown", (e) => {
-        if(e.key === "Enter" || e.key === " "){
-          e.preventDefault();
-          envelopeBtn.click();
-        }
-      });
-    }
-
-    function wireOpenButton(){
-      if(!openBtn) return;
-
-      openBtn.addEventListener("click", () => {
-        if(openBtn.hasAttribute("disabled")) return;
-
-        if(state === "back"){
-          openEnvelope();
-          return;
-        }
-
-        if(state === "ready"){
-          goDetails();
-          return;
-        }
-      });
-
-      openBtn.addEventListener("keydown", (e) => {
-        if(e.key === "Enter" || e.key === " "){
-          e.preventDefault();
-          openBtn.click();
-        }
-      });
-    }
-
-    function wireRestart(){
-      if(!restartBtn) return;
-      restartBtn.addEventListener("click", () => goFront());
-    }
-
     makeDraggable(outerLayer, {
       allowTapFlip: false,
-      onFirstDrag: () => markDragDone()
+      onFirstDrag: function(){ markDragDone(); }
     });
 
     makeDraggable(innerLayer, {
       allowTapFlip: true,
-      onFirstDrag: () => markDragDone(),
-      onFirstTap: () => markTapDone(),
-      onTapFlip: () => {
+      onFirstDrag: function(){ markDragDone(); },
+      onFirstTap: function(){ markTapDone(); },
+      onTapFlip: function(){
         if(!innerLayer) return;
         innerLayer.classList.toggle("is-flipped");
       }
     });
-
-    ensureEnvelopePiece();
-
-    preload([
-      CONFIG.assets.envelopeFront,
-      CONFIG.assets.envelopeBack,
-      CONFIG.assets.envelopePiece,
-      CONFIG.assets.inviteOuter,
-      CONFIG.assets.innerFront,
-      CONFIG.assets.innerBack,
-      CONFIG.assets.restartIcon,
-      CONFIG.assets.hintArrow
-    ]);
-
-    wireEnvelopeToggle();
-    wireOpenButton();
-    wireRestart();
 
     goFront();
   }
