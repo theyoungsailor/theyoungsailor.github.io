@@ -1,133 +1,195 @@
-diff --git a/index.html b/index.html
-index bd186d8dd134ab898bc247862bbeea360871c621..3558baa1ac8cce2b23748d40001ebf8550d52577 100644
---- a/index.html
-+++ b/index.html
-@@ -8,50 +8,128 @@
-   <link rel="preload" as="image" href="imagens/logo-head.png" />
- 
-   <link rel="preload" as="font" href="fonts/against-Regular.woff2" type="font/woff2" crossorigin />
-   <link rel="preload" as="font" href="fonts/against-Regular.woff" type="font/woff" crossorigin />
- 
-   <link rel="stylesheet" href="styles.css" />
-   <link rel="icon" type="image/png" href="/imagens/fav-icon.png">
- </head>
- 
- <body class="wedding-page theme-green">
-   <div id="daisy-layer" aria-hidden="true"></div>
-   <main>
- 
-     <section class="banner-section" aria-label="Topo">
-       <div class="banner-logo-wrap">
-         <img
-           class="banner-logo banner-logo--sm"
-           src="imagens/logo-head.png"
-           alt="Rita e Pedro"
-           loading="eager"
-           decoding="async"
-         />
-       </div>
-     </section>
- 
-+    <section
-+      id="interactive-invite"
-+      class="ii"
-+      data-state="front"
-+      data-details-url="https://desportosnauticosalvor.com/pages/casamento"
-+      style="
-+        --ii-bg: #ffffff;
-+        --ii-max-w: 520px;
-+        --ii-invite-scale: 0.92;
-+        --ii-invite-scale-mobile: 0.90;
-+        --ii-reveal-delay: 560ms;
-+        --ii-btn-bg: #8FA394;
-+        --ii-btn-bg-hover: #7E9686;
-+        --ii-btn-text: #FFFFFF;
-+        --ii-btn-disabled-bg: #C9CEC9;
-+        --ii-btn-disabled-text: #FFFFFF;
-+        --ii-shadow: 0 22px 60px rgba(0,0,0,0.12);
-+        --ii-shadow-soft: 0 14px 34px rgba(0,0,0,0.12);
-+        --ii-shadow-layer: 0 18px 46px rgba(0,0,0,0.12);
-+        --ii-radius: 999px;
-+      "
-+    >
-+      <div class="ii__wrap">
-+        <div class="ii__stage" aria-live="polite">
-+          <div class="ii__stage-inner">
-+            <div class="ii__envelope" aria-label="Envelope animation">
-+              <div class="ii__flip" data-envelope-flip>
-+                <div class="ii__flip-face ii__flip-front">
-+                  <img class="ii__img ii__img--envelope" src="/images/envelope-front1.png" alt="Envelope front" loading="eager" width="1200" height="1200">
-+                </div>
-+                <div class="ii__flip-face ii__flip-back">
-+                  <img class="ii__img ii__img--envelope" src="/images/envelope-back-filled1.png" alt="Envelope back" loading="eager" width="1200" height="1200">
-+                </div>
-+              </div>
-+            </div>
-+
-+            <div class="ii__invite" aria-label="Invitation reveal">
-+              <div class="ii__invite-inner" data-invite-root>
-+                <div class="ii__hint ii__hint--drag" data-hint-drag aria-hidden="true">
-+                  <img class="ii__hint-arrow ii__hint-arrow--drag" src="/images/arrow.png" alt="" aria-hidden="true" loading="lazy" width="512" height="512">
-+                  <div class="ii__hint-text">Mexe-me</div>
-+                </div>
-+
-+                <div class="ii__hint ii__hint--tap" data-hint-tap aria-hidden="true">
-+                  <img class="ii__hint-arrow ii__hint-arrow--tap" src="/images/arrow.png" alt="" aria-hidden="true" loading="lazy" width="512" height="512">
-+                  <div class="ii__hint-text">Carrega aqui</div>
-+                </div>
-+
-+                <div class="ii__invite-layer ii__invite-outer" data-draggable="outer" role="group" aria-label="Invitation outer layer">
-+                  <img class="ii__img ii__img--outer" src="/images/outer-front.png" alt="Invitation outer" loading="eager" width="1200" height="1100">
-+                </div>
-+
-+                <div class="ii__invite-layer ii__invite-innercard" data-draggable="inner" role="group" aria-label="Invitation inner layer">
-+                  <div class="ii__card" data-inner-card>
-+                    <div class="ii__card-face ii__card-front">
-+                      <img class="ii__img ii__img--inner" src="/images/inner-fron1.png" alt="Invitation inner front" loading="eager" width="1200" height="1600">
-+                    </div>
-+                    <div class="ii__card-face ii__card-back">
-+                      <img class="ii__img ii__img--inner" src="/images/inner-back1.png" alt="Invitation inner back" loading="eager" width="1200" height="1600">
-+                    </div>
-+                  </div>
-+                </div>
-+              </div>
-+            </div>
-+
-+          </div>
-+        </div>
-+
-+        <div class="ii__controls" aria-label="Invitation controls">
-+          <button type="button" class="ii__btn" data-main-btn><span class="ii__btn-label">Virar</span></button>
-+
-+          <button type="button" class="ii__restart" data-restart-btn aria-label="Restart" hidden>
-+            <img class="ii__restart-icon" src="/images/restart.png" alt="" aria-hidden="true" loading="lazy" width="256" height="256">
-+          </button>
-+        </div>
-+      </div>
-+    </section>
-+
-     <section class="two-col-section reveal-on" data-reveal="load" data-delay="1" id="section-2">
-       <div class="left-half">
-         <div class="img-swap img-swap--hover reveal-item" data-st="1" id="swapWrap-2" role="button" tabindex="0" aria-label="Ver outra versão do desenho">
-           <img class="swap-base" src="imagens/outline2.2.png" alt="Ilustração" loading="eager" decoding="async" />
- 
-           <div class="swap-overlay-wrap">
-             <img class="swap-overlay" src="imagens/outline1.png" alt="Ilustração (variante)" loading="eager" decoding="async" />
-           </div>
-         </div>
-       </div>
- 
-       <div class="right-half">
-         <h2 class="reveal-item font-against" data-st="2">
-           <span class="main-line">Um espaço para partilharmos os detalhes do nosso dia</span>
-         </h2>
- 
-         <div class="countdown-wrapper countdown-wrapper--clean reveal-item" data-st="3" id="wedding-countdown-2">
-           <p class="countdown-label-top">Faltam:</p>
- 
-           <div class="countdown-row" aria-label="Contagem decrescente">
-             <div class="cd-item">
-               <span id="cd-days-2" class="cd-value">00</span>
-               <span class="cd-unit">dias</span>
-             </div>
-             <div class="cd-item">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#F6E8A6" />
+  <title>Wedding Invite</title>
+
+  <link rel="stylesheet" href="invite.css" />
+  <script src="invite.js" defer></script>
+</head>
+
+<body>
+  <div id="daisy-layer" aria-hidden="true"></div>
+
+  <main id="content" class="page" aria-label="Wedding invitation">
+    <header class="page__header">
+      <p class="page__kicker">Wedding invitation</p>
+      <h1 class="page__title">You are invited</h1>
+      <p class="page__sub">
+        Open the envelope, drag the invite, and tap to flip the inner card.
+      </p>
+    </header>
+
+    <section
+      id="interactive-invite"
+      class="ii"
+      data-state="front"
+      data-details-url="../pages/casamento"
+      style="
+        --ii-max-w: 520px;
+        --ii-invite-scale: 0.92;
+        --ii-invite-scale-mobile: 0.90;
+        --ii-reveal-delay: 560ms;
+
+        --ii-btn-bg: #8FA394;
+        --ii-btn-bg-hover: #7E9686;
+        --ii-btn-text: #FFFFFF;
+        --ii-btn-disabled-bg: #C9CEC9;
+        --ii-btn-disabled-text: #FFFFFF;
+
+        --ii-shadow: 0 22px 60px rgba(0,0,0,0.12);
+        --ii-shadow-soft: 0 14px 34px rgba(0,0,0,0.12);
+        --ii-shadow-layer: 0 18px 46px rgba(0,0,0,0.12);
+        --ii-radius: 999px;
+      "
+    >
+      <div class="ii__wrap">
+        <div class="ii__stage" aria-live="polite">
+          <div class="ii__stage-inner">
+
+            <div class="ii__envelope" aria-label="Envelope animation">
+              <div class="ii__flip" data-envelope-flip>
+                <div class="ii__flip-face ii__flip-front">
+                  <img
+                    class="ii__img ii__img--envelope"
+                    src="../imagens/envelope-front1.png"
+                    alt="Envelope front"
+                    loading="eager"
+                    width="1200"
+                    height="1200"
+                    draggable="false"
+                  />
+                </div>
+                <div class="ii__flip-face ii__flip-back">
+                  <img
+                    class="ii__img ii__img--envelope"
+                    src="../imagens/envelope-back-filled1.png"
+                    alt="Envelope back"
+                    loading="eager"
+                    width="1200"
+                    height="1200"
+                    draggable="false"
+                  />
+                </div>
+              </div>
+
+              <img
+                class="ii__piece"
+                data-envelope-piece
+                src="../imagens/envelope-piece.png"
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                width="1200"
+                height="1200"
+                draggable="false"
+              />
+            </div>
+
+            <div class="ii__invite" aria-label="Invitation reveal">
+              <div class="ii__invite-inner" data-invite-root>
+
+                <div class="ii__hint ii__hint--drag" data-hint-drag aria-hidden="true">
+                  <img
+                    class="ii__hint-arrow ii__hint-arrow--drag"
+                    src="../imagens/arrow.png"
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    width="512"
+                    height="512"
+                    draggable="false"
+                  />
+                  <div class="ii__hint-text">Mexe-me</div>
+                </div>
+
+                <div class="ii__hint ii__hint--tap" data-hint-tap aria-hidden="true">
+                  <img
+                    class="ii__hint-arrow ii__hint-arrow--tap"
+                    src="../imagens/arrow.png"
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    width="512"
+                    height="512"
+                    draggable="false"
+                  />
+                  <div class="ii__hint-text">Carrega aqui</div>
+                </div>
+
+                <div class="ii__invite-layer ii__invite-outer" data-draggable="outer" role="group" aria-label="Invitation outer layer">
+                  <img
+                    class="ii__img ii__img--outer"
+                    src="../imagens/outer-front.png"
+                    alt="Invitation outer"
+                    loading="eager"
+                    width="1200"
+                    height="1100"
+                    draggable="false"
+                  />
+                </div>
+
+                <div class="ii__invite-layer ii__invite-innercard" data-draggable="inner" role="group" aria-label="Invitation inner layer">
+                  <div class="ii__card" data-inner-card>
+                    <div class="ii__card-face ii__card-front">
+                      <img
+                        class="ii__img ii__img--inner"
+                        src="../imagens/inner-fron1.png"
+                        alt="Invitation inner front"
+                        loading="eager"
+                        width="1200"
+                        height="1600"
+                        draggable="false"
+                      />
+                    </div>
+                    <div class="ii__card-face ii__card-back">
+                      <img
+                        class="ii__img ii__img--inner"
+                        src="../imagens/inner-back1.png"
+                        alt="Invitation inner back"
+                        loading="eager"
+                        width="1200"
+                        height="1600"
+                        draggable="false"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="ii__controls" aria-label="Invitation controls">
+          <button type="button" class="ii__btn" data-main-btn>
+            <span class="ii__btn-label">Virar</span>
+          </button>
+
+          <button type="button" class="ii__restart" data-restart-btn aria-label="Restart" hidden>
+            <img
+              class="ii__restart-icon"
+              src="../imagens/restart.png"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              width="256"
+              height="256"
+              draggable="false"
+            />
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="page__footer">
+      <p class="page__note">
+        Tip: On mobile, the hints appear on top of the invite so they stay in view.
+      </p>
+    </footer>
+  </main>
+</body>
+</html>
