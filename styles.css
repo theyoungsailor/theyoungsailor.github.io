@@ -1109,3 +1109,9 @@ p,li,small,span,label{
     opacity:.10;
   }
 }
+.daisy{
+  opacity: 1 !important;
+  background-color: rgba(255,0,0,.18) !important;
+  outline: 2px solid rgba(255,0,0,.6) !important;
+  background-image: none !important;
+}
