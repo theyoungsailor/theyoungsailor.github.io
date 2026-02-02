@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#F6E8A6" />
-  <title>Wedding Invite</title>
+  <title>Invite</title>
 
   <link rel="stylesheet" href="invite.css" />
   <script src="invite.js" defer></script>
@@ -13,15 +13,7 @@
 <body>
   <div id="daisy-layer" aria-hidden="true"></div>
 
-  <main id="content" class="page" aria-label="Wedding invitation">
-    <header class="page__header">
-      <p class="page__kicker">Wedding invitation</p>
-      <h1 class="page__title">You are invited</h1>
-      <p class="page__sub">
-        Open the envelope, drag the invite, and tap to flip the inner card.
-      </p>
-    </header>
-
+  <main class="ii-page" aria-label="Interactive invite">
     <section
       id="interactive-invite"
       class="ii"
@@ -49,9 +41,9 @@
         <div class="ii__stage" aria-live="polite">
           <div class="ii__stage-inner">
 
-            <div class="ii__envelope" aria-label="Envelope animation">
-              <div class="ii__flip" data-envelope-flip>
-                <div class="ii__flip-face ii__flip-front">
+            <button type="button" class="ii__envelope" data-envelope-btn aria-label="Envelope">
+              <span class="ii__flip" data-envelope-flip>
+                <span class="ii__flip-face ii__flip-front">
                   <img
                     class="ii__img ii__img--envelope"
                     src="../imagens/envelope-front1.png"
@@ -61,8 +53,8 @@
                     height="1200"
                     draggable="false"
                   />
-                </div>
-                <div class="ii__flip-face ii__flip-back">
+                </span>
+                <span class="ii__flip-face ii__flip-back">
                   <img
                     class="ii__img ii__img--envelope"
                     src="../imagens/envelope-back-filled1.png"
@@ -72,8 +64,8 @@
                     height="1200"
                     draggable="false"
                   />
-                </div>
-              </div>
+                </span>
+              </span>
 
               <img
                 class="ii__piece"
@@ -86,7 +78,7 @@
                 height="1200"
                 draggable="false"
               />
-            </div>
+            </button>
 
             <div class="ii__invite" aria-label="Invitation reveal">
               <div class="ii__invite-inner" data-invite-root>
@@ -164,9 +156,9 @@
           </div>
         </div>
 
-        <div class="ii__controls" aria-label="Invitation controls">
-          <button type="button" class="ii__btn" data-main-btn>
-            <span class="ii__btn-label">Virar</span>
+        <div class="ii__controls" aria-label="Controls">
+          <button type="button" class="ii__btn" data-open-btn hidden>
+            <span class="ii__btn-label">Open</span>
           </button>
 
           <button type="button" class="ii__restart" data-restart-btn aria-label="Restart" hidden>
@@ -184,12 +176,6 @@
         </div>
       </div>
     </section>
-
-    <footer class="page__footer">
-      <p class="page__note">
-        Tip: On mobile, the hints appear on top of the invite so they stay in view.
-      </p>
-    </footer>
   </main>
 </body>
 </html>
