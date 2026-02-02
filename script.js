@@ -766,26 +766,22 @@ function initDaisyBackground(){
   const MIN_SIZE = 30;
   const MAX_SIZE = 84;
 
-  const MIN_LIFE = 1;
-  const MAX_LIFE = 5;
+  const MIN_LIFE = 10;
+  const MAX_LIFE = 22;
 
-  const MIN_SPIN = 1.2;
-  const MAX_SPIN = 3.4;
+  const MIN_SPIN = 14;
+  const MAX_SPIN = 30;
 
-  const MIN_OPACITY = 0.08;
-  const MAX_OPACITY = 0.18;
+  const MIN_OPACITY = 0.07;
+  const MAX_OPACITY = 0.16;
 
   const DRIFT_RANGE = 60;
   const SAFE_PADDING = 12;
   const MAX_ATTEMPTS = 22;
 
   const alive = [];
-  let daisyUrl = null;
-  let timer = null;
 
-  function rand(min, max){
-    return Math.random() * (max - min) + min;
-  }
+  function rand(min, max){ return Math.random() * (max - min) + min; }
 
   function rectsOverlap(a, b){
     return !(
@@ -803,148 +799,134 @@ function initDaisyBackground(){
     return true;
   }
 
-  function loadImageOnce(url){
+  function inferBasePath(){
+    const path = window.location.pathname || "/";
+    if(path.endsWith("/")) return path;
+    const slash = path.lastIndexOf("/");
+    return slash >= 0 ? path.slice(0, slash + 1) : "/";
+  }
+
+  function loadImage(url){
     return new Promise((resolve, reject)=>{
       const img = new Image();
+      img.decoding = "async";
       img.onload = ()=>resolve(url);
-      img.onerror = ()=>reject(new Error("Image failed: " + url));
+      img.onerror = ()=>reject(new Error("failed"));
       img.src = url;
     });
   }
 
-  async function resolveDaisyUrl(){
-    const rel = "imagens/daisy.png";
-    const baseA = new URL(rel, document.baseURI).href;
-    const baseB = new URL("./" + rel, location.href).href;
+  async function resolveDaisySrc(){
+    const basePath = inferBasePath();
+    const candidates = [
+      new URL("imagens/daisy.png", window.location.href).href,
+      new URL("./imagens/daisy.png", window.location.href).href,
+      window.location.origin + basePath + "imagens/daisy.png",
+      window.location.origin + "/imagens/daisy.png"
+    ];
 
-    const currentDir = location.origin + location.pathname.replace(/\/[^\/]*$/, "/");
-    const baseC = currentDir + rel;
-
-    const baseD = location.origin + "/" + rel;
-
-    const candidates = [baseA, baseB, baseC, baseD];
-
-    for(const base of candidates){
-      try{
-        return await loadImageOnce(base);
-      }catch(_e){
-        try{
-          // Cache-buster fallback (useful if an old 404 is cached by an edge)
-          const busted = base + (base.includes("?") ? "&" : "?") + "v=" + Date.now();
-          return await loadImageOnce(busted);
-        }catch(_e2){
-          // keep trying next candidate
+    for(const raw of candidates){
+      try {
+        await loadImage(raw);
+        console.info("[daisy] loaded:", raw);
+        return raw;
+      } catch(e) {
+        const busted = raw + (raw.includes("?") ? "&" : "?") + "v=" + Date.now();
+        try {
+          await loadImage(busted);
+          console.info("[daisy] loaded (busted):", busted);
+          return busted;
+        } catch(e2) {
+          console.warn("[daisy] failed:", raw);
         }
       }
     }
-    return null;
+
+    console.warn("[daisy] png not found, using inline svg fallback");
+    return "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22c%22%20cx%3D%2250%25%22%20cy%3D%2250%25%22%20r%3D%2260%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23FFE39A%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23E7B94D%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Cg%20opacity%3D%220.98%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23EDE7D6%22%20stroke-width%3D%222%22%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2260%22%20cy%3D%2218%22%20rx%3D%2216%22%20ry%3D%2226%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2286%22%20cy%3D%2224%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%2835%2086%2024%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%22102%22%20cy%3D%2250%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%2870%20102%2050%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2294%22%20cy%3D%2278%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28110%2094%2078%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2266%22%20cy%3D%22100%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28145%2066%20100%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2238%22%20cy%3D%22100%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28215%2038%20100%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2218%22%20cy%3D%2278%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28250%2018%2078%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2216%22%20cy%3D%2250%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28290%2016%2050%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2226%22%20cy%3D%2224%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28325%2026%2024%29%22/%3E%0A%20%20%20%20%3C/g%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2258%22%20r%3D%2218%22%20fill%3D%22url%28%23c%29%22%20stroke%3D%22%23D7A73E%22%20stroke-width%3D%222%22/%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E";
+  }
+
+  let DAISY_SRC = null;
+
+  async function boot(){
+    DAISY_SRC = await resolveDaisySrc();
+    start();
+  }
+
+  function makeDaisyEl(){
+    const el = document.createElement("span");
+    el.className = "daisy";
+
+    const img = document.createElement("img");
+    img.className = "daisy__img";
+    img.alt = "";
+    img.setAttribute("aria-hidden","true");
+    img.decoding = "async";
+    img.loading = "eager";
+    img.src = DAISY_SRC;
+
+    el.appendChild(img);
+    return el;
   }
 
   function tryCreate(){
-    if(!daisyUrl) return;
     if(layer.childElementCount >= MAX_FLOWERS) return;
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
     const size = Math.round(rand(MIN_SIZE, MAX_SIZE));
-    const life = rand(MIN_LIFE, MAX_LIFE);
-    const spin = rand(MIN_SPIN, MAX_SPIN);
-    const opacity = rand(MIN_OPACITY, MAX_OPACITY);
-
-    const dir = Math.random() < 0.5 ? -1 : 1;
-    const startRot = `${Math.round(rand(0, 360))}deg`;
-
-    const dxVal = Math.round(rand(-DRIFT_RANGE, DRIFT_RANGE));
-    const dyVal = Math.round(rand(-DRIFT_RANGE, DRIFT_RANGE));
+    const w = size + SAFE_PADDING;
+    const h = size + SAFE_PADDING;
 
     let placed = false;
-    let x = 0;
-    let y = 0;
+    let candidate = null;
 
-    for(let attempt = 0; attempt < MAX_ATTEMPTS; attempt++){
-      x = rand(0, Math.max(0, vw - size));
-      y = rand(0, Math.max(0, vh - size));
-
-      const candidate = {
-        x: x - SAFE_PADDING,
-        y: y - SAFE_PADDING,
-        w: size + SAFE_PADDING * 2,
-        h: size + SAFE_PADDING * 2
-      };
-
-      if(canPlace(candidate)){
-        alive.push(candidate);
-        placed = true;
-        break;
-      }
+    for(let i=0;i<MAX_ATTEMPTS;i++){ 
+      const x = Math.round(rand(0, Math.max(0, vw - w)));
+      const y = Math.round(rand(0, Math.max(0, vh - h)));
+      candidate = { x, y, w, h };
+      if(canPlace(candidate)){ placed = true; break; }
     }
+    if(!placed || !candidate) return;
 
-    if(!placed) return;
+    const life = rand(MIN_LIFE, MAX_LIFE).toFixed(2) + "s";
+    const spin = rand(MIN_SPIN, MAX_SPIN).toFixed(2) + "s";
+    const opacity = rand(MIN_OPACITY, MAX_OPACITY).toFixed(3);
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    const startRot = Math.round(rand(0, 360)) + "deg";
+    const dx = Math.round(rand(-DRIFT_RANGE, DRIFT_RANGE)) + "px";
+    const dy = Math.round(rand(-DRIFT_RANGE, DRIFT_RANGE)) + "px";
 
-    const el = document.createElement("div");
-    el.className = "daisy";
-
-    el.style.setProperty("--size", `${size}px`);
-    el.style.setProperty("--life", `${life}s`);
-    el.style.setProperty("--spin", `${spin}s`);
-    el.style.setProperty("--opacity", `${opacity}`);
-    el.style.setProperty("--x", `${x}px`);
-    el.style.setProperty("--y", `${y}px`);
-    el.style.setProperty("--dx", `${dxVal}px`);
-    el.style.setProperty("--dy", `${dyVal}px`);
-    el.style.setProperty("--dir", String(dir));
+    const el = makeDaisyEl();
+    el.style.setProperty("--size", size + "px");
+    el.style.setProperty("--x", candidate.x + "px");
+    el.style.setProperty("--y", candidate.y + "px");
+    el.style.setProperty("--dx", dx);
+    el.style.setProperty("--dy", dy);
+    el.style.setProperty("--life", life);
+    el.style.setProperty("--spin", spin);
+    el.style.setProperty("--opacity", opacity);
+    el.style.setProperty("--dir", dir);
     el.style.setProperty("--start-rot", startRot);
 
-    // Set background image inline with the resolved URL (robust across subpaths)
-    el.style.backgroundImage = `url("${daisyUrl}")`;
-
     layer.appendChild(el);
+    alive.push(candidate);
 
-    const removeAfter = Math.ceil(life * 1000) + 350;
-
-    setTimeout(()=>{
-      el.remove();
-
-      const targetX = x - SAFE_PADDING;
-      const targetY = y - SAFE_PADDING;
-      const targetW = size + SAFE_PADDING * 2;
-
-      const idx = alive.findIndex(r =>
-        r.x === targetX && r.y === targetY && r.w === targetW
-      );
+    window.setTimeout(()=>{
+      if(el.parentNode) el.parentNode.removeChild(el);
+      const idx = alive.indexOf(candidate);
       if(idx >= 0) alive.splice(idx, 1);
-    }, removeAfter);
+    }, parseFloat(life) * 1000 + 80);
   }
 
   function start(){
-    if(timer) return;
-    timer = setInterval(tryCreate, INTERVAL_MS);
-    tryCreate();
+    window.setInterval(()=>{
+      if(document.hidden) return;
+      tryCreate();
+    }, INTERVAL_MS);
   }
 
-  function stop(){
-    if(timer){
-      clearInterval(timer);
-      timer = null;
-    }
-    layer.innerHTML = "";
-    alive.length = 0;
-  }
-
-  document.addEventListener("visibilitychange", ()=>{
-    if(document.hidden){
-      stop();
-    }else{
-      start();
-    }
-  });
-
-  // Resolve image URL first, then start the animation
-  resolveDaisyUrl().then((url)=>{
-    daisyUrl = url;
-    if(!daisyUrl) return;
-    start();
-  });
+  boot();
 }
 
