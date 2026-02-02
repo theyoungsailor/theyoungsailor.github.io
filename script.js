@@ -760,13 +760,6 @@ function initDaisyBackground(){
   const layer = document.getElementById("daisy-layer");
   if(!layer) return;
 
-  const daisyUrl = new URL("imagens/daisy.png", document.baseURI).href;
-  layer.style.setProperty("--daisy-url", `url("${daisyUrl}")`);
-
-  const preload = new Image();
-  preload.decoding = "async";
-  preload.src = daisyUrl;
-
   const MAX_FLOWERS = 12;
   const INTERVAL_MS = 650;
 
@@ -779,14 +772,16 @@ function initDaisyBackground(){
   const MIN_SPIN = 1.2;
   const MAX_SPIN = 3.4;
 
-  const MIN_OPACITY = 0.07;
-  const MAX_OPACITY = 0.16;
+  const MIN_OPACITY = 0.08;
+  const MAX_OPACITY = 0.18;
 
   const DRIFT_RANGE = 60;
   const SAFE_PADDING = 12;
   const MAX_ATTEMPTS = 22;
 
   const alive = [];
+  let daisyUrl = null;
+  let timer = null;
 
   function rand(min, max){
     return Math.random() * (max - min) + min;
@@ -808,7 +803,45 @@ function initDaisyBackground(){
     return true;
   }
 
+  function loadImageOnce(url){
+    return new Promise((resolve, reject)=>{
+      const img = new Image();
+      img.onload = ()=>resolve(url);
+      img.onerror = ()=>reject(new Error("Image failed: " + url));
+      img.src = url;
+    });
+  }
+
+  async function resolveDaisyUrl(){
+    const rel = "imagens/daisy.png";
+    const baseA = new URL(rel, document.baseURI).href;
+    const baseB = new URL("./" + rel, location.href).href;
+
+    const currentDir = location.origin + location.pathname.replace(/\/[^\/]*$/, "/");
+    const baseC = currentDir + rel;
+
+    const baseD = location.origin + "/" + rel;
+
+    const candidates = [baseA, baseB, baseC, baseD];
+
+    for(const base of candidates){
+      try{
+        return await loadImageOnce(base);
+      }catch(_e){
+        try{
+          // Cache-buster fallback (useful if an old 404 is cached by an edge)
+          const busted = base + (base.includes("?") ? "&" : "?") + "v=" + Date.now();
+          return await loadImageOnce(busted);
+        }catch(_e2){
+          // keep trying next candidate
+        }
+      }
+    }
+    return null;
+  }
+
   function tryCreate(){
+    if(!daisyUrl) return;
     if(layer.childElementCount >= MAX_FLOWERS) return;
 
     const vw = window.innerWidth;
@@ -852,8 +885,6 @@ function initDaisyBackground(){
     const el = document.createElement("div");
     el.className = "daisy";
 
-    el.style.backgroundImage = `url("${daisyUrl}")`;
-
     el.style.setProperty("--size", `${size}px`);
     el.style.setProperty("--life", `${life}s`);
     el.style.setProperty("--spin", `${spin}s`);
@@ -864,6 +895,9 @@ function initDaisyBackground(){
     el.style.setProperty("--dy", `${dyVal}px`);
     el.style.setProperty("--dir", String(dir));
     el.style.setProperty("--start-rot", startRot);
+
+    // Set background image inline with the resolved URL (robust across subpaths)
+    el.style.backgroundImage = `url("${daisyUrl}")`;
 
     layer.appendChild(el);
 
@@ -883,18 +917,34 @@ function initDaisyBackground(){
     }, removeAfter);
   }
 
-  let timer = setInterval(tryCreate, INTERVAL_MS);
+  function start(){
+    if(timer) return;
+    timer = setInterval(tryCreate, INTERVAL_MS);
+    tryCreate();
+  }
+
+  function stop(){
+    if(timer){
+      clearInterval(timer);
+      timer = null;
+    }
+    layer.innerHTML = "";
+    alive.length = 0;
+  }
 
   document.addEventListener("visibilitychange", ()=>{
     if(document.hidden){
-      clearInterval(timer);
-      timer = null;
-      layer.innerHTML = "";
-      alive.length = 0;
+      stop();
     }else{
-      if(!timer) timer = setInterval(tryCreate, INTERVAL_MS);
+      start();
     }
   });
 
-  tryCreate();
+  // Resolve image URL first, then start the animation
+  resolveDaisyUrl().then((url)=>{
+    daisyUrl = url;
+    if(!daisyUrl) return;
+    start();
+  });
 }
+
