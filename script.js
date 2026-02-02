@@ -23,20 +23,51 @@ function setStatus(msg, type){
   el.textContent = msg || "";
 }
 
+/* scroll lock que mantém posição ao fechar modal (resolve o salto para o topo) */
+function lockScroll(){
+  if(document.documentElement.dataset.scrollLocked === "1") return;
+
+  const y = window.scrollY || window.pageYOffset || 0;
+  document.documentElement.dataset.scrollLocked = "1";
+  document.documentElement.dataset.scrollY = String(y);
+
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${y}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+  document.body.style.overflow = "hidden";
+}
+
+function unlockScroll(){
+  if(document.documentElement.dataset.scrollLocked !== "1") return;
+
+  const y = parseInt(document.documentElement.dataset.scrollY || "0", 10) || 0;
+  document.documentElement.dataset.scrollLocked = "0";
+  document.documentElement.dataset.scrollY = "0";
+
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  document.body.style.overflow = "";
+
+  window.scrollTo(0, y);
+}
+
 function openModal(modal){
   if(!modal) return;
+  lockScroll();
   modal.classList.add("is-open");
   modal.setAttribute("aria-hidden","false");
-  document.documentElement.style.overflow = "hidden";
-  document.body.style.overflow = "hidden";
 }
 
 function closeModal(modal){
   if(!modal) return;
   modal.classList.remove("is-open");
   modal.setAttribute("aria-hidden","true");
-  document.documentElement.style.overflow = "";
-  document.body.style.overflow = "";
+  unlockScroll();
 }
 
 function isPlaceholder(v){
@@ -48,7 +79,7 @@ function assertSupabaseConfig(){
   const okKey = SUPABASE_ANON_KEY && (SUPABASE_ANON_KEY.startsWith("sb_") || SUPABASE_ANON_KEY.length > 40);
 
   if(isPlaceholder(SUPABASE_URL) || isPlaceholder(SUPABASE_ANON_KEY) || !okUrl || !okKey){
-    const msg = "Supabase não configurado. Confirma SUPABASE_URL (https://...supabase.co) e SUPABASE_ANON_KEY (sb_...).";
+    const msg = "Supabase não configurado. Confirma SUPABASE_URL (https://...supabase.co) e SUPABASE_ANON_KEY (sb_publishable_...).";
     setStatus(msg, "error");
     console.error(msg, { SUPABASE_URL, hasKey: !!SUPABASE_ANON_KEY });
     return false;
@@ -66,7 +97,7 @@ function withTimeout(promise, ms, label){
   return Promise.race([promise, timeout]).finally(()=> clearTimeout(t));
 }
 
-/* UI stuff */
+/* UI */
 function initReveal(){
   const sections = $all(".reveal-on");
   if(!sections.length) return;
@@ -218,7 +249,7 @@ function initAccommodationCarousel(){
   goTo(0);
 }
 
-/* Supabase helpers (sem dependências externas) */
+/* Supabase helpers */
 function joinPathKeepSlashes(path){
   const parts = String(path || "").split("/").filter(Boolean);
   return parts.map(p => encodeURIComponent(p)).join("/");
@@ -246,7 +277,7 @@ async function supabaseFetch(path, options = {}){
   };
 
   try{
-    const res = await withTimeout(fetch(url, fetchOpts), 20000, "Timeout a contactar Supabase");
+    const res = await withTimeout(fetch(url, fetchOpts), 25000, "Timeout a contactar Supabase");
     const text = await res.text();
     let data = null;
     try { data = text ? JSON.parse(text) : null; } catch { data = text; }
@@ -266,10 +297,9 @@ async function supabaseFetch(path, options = {}){
   }catch(err){
     if(err && err.name === "TypeError" && String(err.message).toLowerCase().includes("failed to fetch")){
       const hint = [
-        "Failed to fetch: normalmente é CORS, bloqueio de rede/adblock, URL do Supabase errada, ou Cloudflare a interferir.",
-        "Confirma em Supabase: API > CORS Allowed Origins inclui https://ocasamento.website e https://theyoungsailor.github.io",
-        "Confirma que SUPABASE_URL começa com https e que não tens http misturado.",
-        "Confirma que o bucket e policies permitem upload para anon."
+        "Failed to fetch: normalmente é bloqueio de rede/adblock, URL do Supabase errada, ou política do browser.",
+        "Confirma que o site está em https e que o SUPABASE_URL também.",
+        "Em desktop, desliga extensões de adblock para testar."
       ].join(" ");
       console.error("Supabase fetch falhou", { url, hint, err });
       throw new Error(hint);
@@ -356,44 +386,6 @@ async function fetchPhotos({ order = "latest" } = {}){
   return Array.isArray(data) ? data : [];
 }
 
-/* Lista ficheiros no bucket (fallback e sync opcional)
-   Nota: este endpoint depende de policies em storage.objects para anon.
-*/
-async function listBucketObjects(prefix = "uploads/"){
-  const bucketEnc = encodeURIComponent(SUPABASE_BUCKET);
-  const payload = { prefix, limit: 1000, offset: 0, sortBy: { column: "name", order: "desc" } };
-
-  const data = await supabaseFetch(`/storage/v1/object/list/${bucketEnc}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-
-  if(!Array.isArray(data)) return [];
-  return data
-    .filter(o => o && o.name && !o.name.endsWith("/"))
-    .map(o => `${prefix}${o.name}`.replace(/\/+/g, "/"));
-}
-
-async function syncBucketToTableIfPossible(){
-  try{
-    const existing = await fetchPhotos({ order: "latest" });
-    const existingPaths = new Set(existing.map(x => x.path).filter(Boolean));
-
-    const objects = await listBucketObjects("uploads/");
-    const toInsert = objects.filter(p => !existingPaths.has(p)).slice(0, 50);
-
-    if(!toInsert.length) return;
-
-    for(const path of toInsert){
-      const publicUrl = publicUrlFor(path);
-      await insertPhotoRow({ path, title: null, public_url: publicUrl });
-    }
-  }catch(err){
-    console.warn("Sync bucket -> table falhou (normal se não houver permissão para listar).", err);
-  }
-}
-
 function renderGallery(items){
   const grid = $("#ugcGrid");
   const count = $("#ugcCount");
@@ -453,7 +445,6 @@ function renderGallery(items){
   });
 }
 
-/* Preview modal (reutiliza o modal da Quinta) */
 function openPreview(url, title){
   const modal = $("#quintaModal");
   const img = modal ? $(".quinta-modal-img", modal) : null;
@@ -581,25 +572,11 @@ function initUGC(){
         return;
       }
 
-      let items = await fetchPhotos({ order: sortMode });
-
-      if(items.length === 0){
-        await syncBucketToTableIfPossible();
-        items = await fetchPhotos({ order: sortMode });
-
-        if(items.length === 0){
-          try{
-            const objects = await listBucketObjects("uploads/");
-            items = objects.map(p => ({ path: p, title: "", public_url: publicUrlFor(p) }));
-          }catch(_){
-          }
-        }
-      }
-
+      const items = await fetchPhotos({ order: sortMode });
       renderGallery(items);
       setStatus("");
     }catch(err){
-      setStatus("Não foi possível carregar a galeria. Confirma tabela, RLS, CORS e bucket.", "error");
+      setStatus("Não foi possível carregar a galeria. Confirma tabela, RLS e permissões.", "error");
       console.error("Refresh galeria falhou", err);
     }
   }
@@ -636,7 +613,7 @@ function initUGC(){
         closeModal(modal);
         submitBtn.disabled = false;
         submitBtn.textContent = "Submeter";
-      }, 650);
+      }, 450);
 
     }catch(err){
       const msg = (err && err.message) ? err.message : "Erro no upload.";
@@ -711,18 +688,6 @@ function initUGC(){
 
   if(prevBtn){
     prevBtn.addEventListener("click", ()=> setStep(1));
-  }
-
-  if(nextBtn){
-    nextBtn.addEventListener("click", ()=>{
-      if(step === 1){
-        if(!selectedFiles.length){
-          setStatus("Escolhe pelo menos uma imagem.", "error");
-          return;
-        }
-        setStep(2);
-      }
-    });
   }
 
   submitBtn.addEventListener("click", doSubmit);
