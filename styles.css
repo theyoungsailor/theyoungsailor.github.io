@@ -1078,3 +1078,72 @@ p,li,small,span,label{
   .acc-arrow-left{left:8px}
   .acc-arrow-right{right:8px}
 }
+#daisy-layer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  overflow:hidden;
+}
+
+.wedding-page main{
+  position:relative;
+  z-index:1;
+}
+
+.daisy{
+  position:absolute;
+  width:var(--size);
+  height:var(--size);
+
+  background-image:url("/imagens/daisy.webp");
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+
+  opacity:0;
+
+  transform:translate3d(var(--x),var(--y),0) rotate(var(--start-rot));
+  transform-origin:center;
+
+  will-change:transform,opacity;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.08));
+
+  animation:
+    daisyFade var(--life) ease-in-out forwards,
+    daisySpin var(--spin) linear infinite,
+    daisyDrift var(--life) ease-in-out forwards;
+}
+
+@keyframes daisyFade{
+  0%{opacity:0}
+  15%{opacity:var(--opacity)}
+  85%{opacity:var(--opacity)}
+  100%{opacity:0}
+}
+
+@keyframes daisySpin{
+  from{
+    transform:translate3d(var(--x),var(--y),0) rotate(var(--start-rot));
+  }
+  to{
+    transform:translate3d(var(--x),var(--y),0) rotate(calc(var(--start-rot) + (360deg * var(--dir))));
+  }
+}
+
+@keyframes daisyDrift{
+  0%{
+    transform:translate3d(var(--x),var(--y),0) rotate(var(--start-rot));
+  }
+  100%{
+    transform:translate3d(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy)),0) rotate(var(--start-rot));
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .daisy{
+    animation:none;
+    opacity:.10;
+  }
+}
+
