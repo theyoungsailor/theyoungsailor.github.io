@@ -1,1 +1,375 @@
+diff --git a/styles.css b/styles.css
+index 9fce67a6622696b23d4689b5b027fb32af0d7914..3968d6add1b5f3b74f26cef9f0294979c203cc5f 100644
+--- a/styles.css
++++ b/styles.css
+@@ -1205,25 +1205,369 @@ main {
+ .ugc-title,
+ .ugc-subtitle{
+   margin-left:auto;
+   margin-right:auto;
+ }
+ 
+ .ugc-btn{
+   display:inline-flex;
+   margin-left:auto;
+   margin-right:auto;
+ }
+ 
+ /* Detalhes: título centrado, lista centrada como bloco (texto permanece alinhado à esquerda) */
+ .details-text{
+   text-align:center;
+   max-width:820px;
+   margin-left:auto;
+   margin-right:auto;
+ }
+ 
+ .details-list{
+   display:inline-block;
+   text-align:left;
+   margin:18px auto 0;
+ }
++
++#interactive-invite.ii{
++  width:100%;
++  background: var(--ii-bg, #ffffff);
++  padding: clamp(28px,4vw,52px) 0;
++  overflow:hidden;
++}
++#interactive-invite .ii__wrap{
++  width:min(1200px,100%);
++  margin:0 auto;
++  padding:0 20px;
++  min-height: min(860px, 100vh);
++  display:flex;
++  flex-direction:column;
++  align-items:center;
++  justify-content:center;
++  gap: clamp(18px,3vw,26px);
++}
++#interactive-invite .ii__stage{
++  width:100%;
++  flex: 1 1 auto;
++  min-height: clamp(420px,58vh,680px);
++  display:flex;
++  align-items:center;
++  justify-content:center;
++  position:relative;
++}
++#interactive-invite .ii__stage-inner{
++  width: min(var(--ii-max-w), 92vw);
++  position:relative;
++  display:flex;
++  align-items:center;
++  justify-content:center;
++  transform: translateZ(0);
++}
++
++#interactive-invite .ii__img{
++  display:block;
++  width:100%;
++  height:auto;
++  user-select:none;
++  -webkit-user-drag:none;
++  pointer-events:none;
++}
++
++#interactive-invite .ii__envelope{
++  width:100%;
++  position:relative;
++  filter: drop-shadow(var(--ii-shadow));
++  transform-origin: 50% 50%;
++  will-change: transform, opacity;
++  z-index: 6;
++  transform: translateZ(0);
++}
++#interactive-invite .ii__flip{
++  width:100%;
++  position:relative;
++  aspect-ratio: 1 / 1;
++  transform-style:preserve-3d;
++  transition: transform 700ms cubic-bezier(.2,.8,.2,1);
++}
++#interactive-invite .ii__flip-face{
++  position:absolute;
++  inset:0;
++  backface-visibility:hidden;
++  -webkit-backface-visibility:hidden;
++}
++#interactive-invite .ii__flip-back{ transform: rotateY(180deg); }
++#interactive-invite .ii__envelope.is-flipped .ii__flip{ transform: rotateY(180deg); }
++
++#interactive-invite .ii__piece{
++  position:absolute;
++  inset:0;
++  width:100%;
++  height:auto;
++  opacity:0;
++  pointer-events:none;
++  filter: drop-shadow(var(--ii-shadow-soft));
++  transition: opacity 220ms ease;
++}
++#interactive-invite[data-state="back"] .ii__piece{ opacity: 1; }
++#interactive-invite[data-state="opening"] .ii__piece{ opacity: 0; }
++
++#interactive-invite[data-state="opening"] .ii__envelope{
++  animation: iiEnvelopeExit 1400ms cubic-bezier(.2,.8,.2,1) forwards;
++  pointer-events:none;
++}
++#interactive-invite[data-state="opening"] .ii__envelope.ii__envelope--behind{ z-index: 1; }
++
++@keyframes iiEnvelopeExit{
++  0%   { transform: translateX(0) rotate(0deg); opacity: 1; }
++  38%  { transform: translateX(0) rotate(90deg); opacity: 1; }
++  100% { transform: translateX(-46vw) rotate(90deg); opacity: 0; }
++}
++
++#interactive-invite .ii__invite{
++  position:absolute;
++  inset:0;
++  display:flex;
++  align-items:center;
++  justify-content:center;
++  pointer-events:none;
++  z-index: 3;
++}
++#interactive-invite .ii__invite-inner{
++  width: min(var(--ii-max-w), 92vw);
++  position:relative;
++  opacity:0;
++  transform: scale(0.92) translateZ(0);
++  pointer-events:none;
++  transition: opacity 520ms ease, transform 520ms cubic-bezier(.2,.8,.2,1);
++  will-change: opacity, transform;
++  z-index: 4;
++}
++
++#interactive-invite[data-state="opening"] .ii__invite-inner{
++  opacity:1;
++  transform: scale(var(--ii-invite-scale));
++  pointer-events:auto;
++  transition-delay: var(--ii-reveal-delay);
++}
++#interactive-invite[data-state="revealed"] .ii__invite-inner,
++#interactive-invite[data-state="ready"] .ii__invite-inner{
++  opacity:1;
++  transform: scale(var(--ii-invite-scale));
++  pointer-events:auto;
++  transition-delay: 0ms;
++}
++
++#interactive-invite .ii__invite-layer{
++  position:absolute;
++  left:0;
++  bottom:0;
++  width:100%;
++  touch-action:none;
++  will-change: transform;
++}
++#interactive-invite .ii__invite-outer{
++  z-index: 4;
++  pointer-events:auto;
++  filter: drop-shadow(var(--ii-shadow-layer));
++}
++#interactive-invite .ii__invite-innercard{
++  position:relative;
++  width:100%;
++  bottom:0;
++  left:0;
++  z-index: 3;
++  pointer-events:auto;
++  filter: drop-shadow(var(--ii-shadow-layer));
++}
++
++#interactive-invite .ii__card{
++  width:100%;
++  position:relative;
++  transform-style:preserve-3d;
++  transition: transform 720ms cubic-bezier(.2,.8,.2,1);
++}
++#interactive-invite .ii__card-face{
++  position:absolute;
++  inset:0;
++  backface-visibility:hidden;
++  -webkit-backface-visibility:hidden;
++}
++#interactive-invite .ii__card-front{ position:relative; }
++#interactive-invite .ii__card-back{ transform: rotateY(180deg); }
++#interactive-invite .ii__invite-innercard.is-flipped .ii__card{ transform: rotateY(180deg); }
++
++#interactive-invite .ii__hint{
++  position:absolute;
++  z-index: 6;
++  display:flex;
++  align-items:center;
++  gap: 10px;
++  opacity:0;
++  transform: translateY(8px) scale(0.98);
++  pointer-events:none;
++  transition: opacity 220ms ease, transform 220ms ease;
++  left: calc(100% + 10px);
++}
++#interactive-invite[data-state="ready"] .ii__hint{
++  opacity:1;
++  transform: translateY(0) scale(1);
++}
++#interactive-invite .ii__hint.is-hidden{
++  opacity:0 !important;
++  transform: translateY(10px) scale(0.98) !important;
++}
++#interactive-invite .ii__hint-arrow{
++  width: clamp(40px,5.2vw,58px);
++  height:auto;
++  display:block;
++  animation: iiPulse 1.2s ease-in-out infinite;
++  filter: drop-shadow(0 12px 24px rgba(0,0,0,0.10));
++}
++#interactive-invite .ii__hint-arrow--drag{
++  transform: scaleY(-1);
++  animation: iiPulseDrag 1.2s ease-in-out infinite;
++}
++#interactive-invite .ii__hint-text{
++  font-family: var(--font-body-family, Arial);
++  font-size: clamp(18px,2.2vw,28px);
++  font-weight: 500;
++  color: rgba(0,0,0,0.85);
++  animation: iiFloat 1.2s ease-in-out infinite;
++  white-space: nowrap;
++}
++
++#interactive-invite .ii__hint--tap{ top: 22%; }
++#interactive-invite .ii__hint--drag{ top: 50%; }
++
++@keyframes iiPulse{
++  0%{ transform: scale(1); opacity: 0.85; }
++  50%{ transform: scale(1.06); opacity: 1; }
++  100%{ transform: scale(1); opacity: 0.85; }
++}
++@keyframes iiPulseDrag{
++  0%{ transform: scaleY(-1) scale(1); opacity: 0.85; }
++  50%{ transform: scaleY(-1) scale(1.06); opacity: 1; }
++  100%{ transform: scaleY(-1) scale(1); opacity: 0.85; }
++}
++@keyframes iiFloat{
++  0%{ transform: translateY(0); }
++  50%{ transform: translateY(-2px); }
++  100%{ transform: translateY(0); }
++}
++
++#interactive-invite .ii__controls{
++  width:100%;
++  display:flex;
++  flex-direction:column;
++  align-items:center;
++  justify-content:center;
++  gap: 14px;
++  padding-bottom: clamp(16px,3vh,34px);
++}
++#interactive-invite .ii__btn{
++  appearance:none;
++  border:0;
++  cursor:pointer;
++  background: var(--ii-btn-bg);
++  color: var(--ii-btn-text);
++  border-radius: var(--ii-radius);
++  padding: 12px 30px;
++  min-width: min(340px, 84vw);
++  font-size: clamp(16px,2vw,22px);
++  line-height:1;
++  letter-spacing: 0.06em;
++  text-transform: uppercase;
++  font-weight: 700;
++  box-shadow: 0 18px 44px rgba(0,0,0,0.10);
++  transition: transform 160ms ease, background 160ms ease, opacity 160ms ease;
++  user-select:none;
++  -webkit-tap-highlight-color: transparent;
++}
++#interactive-invite .ii__btn:hover{ background: var(--ii-btn-bg-hover); transform: translateY(-1px); }
++#interactive-invite .ii__btn:active{ transform: translateY(0); opacity: 0.96; }
++#interactive-invite .ii__btn.is-disabled,
++#interactive-invite .ii__btn:disabled{
++  cursor:not-allowed;
++  background: var(--ii-btn-disabled-bg);
++  color: var(--ii-btn-disabled-text);
++  opacity: 0.92;
++  transform: none;
++}
++
++#interactive-invite .ii__restart{
++  appearance:none;
++  border:0;
++  cursor:pointer;
++  background: transparent;
++  display:flex;
++  align-items:center;
++  justify-content:center;
++  width: 56px;
++  height: 56px;
++  border-radius: 999px;
++  box-shadow: 0 14px 34px rgba(0,0,0,0.10);
++  transition: transform 160ms ease, opacity 160ms ease;
++  user-select:none;
++  -webkit-tap-highlight-color: transparent;
++}
++#interactive-invite .ii__restart:hover{ transform: translateY(-1px); }
++#interactive-invite .ii__restart:active{ transform: translateY(0); opacity: 0.96; }
++#interactive-invite .ii__restart-icon{
++  width: 34px;
++  height: 34px;
++  display:block;
++  pointer-events:none;
++  user-select:none;
++  -webkit-user-drag:none;
++  opacity: 0.92;
++}
++
++#interactive-invite[data-state="front"] .ii__invite-inner,
++#interactive-invite[data-state="back"] .ii__invite-inner{
++  opacity:0;
++  transform: scale(0.92);
++  pointer-events:none;
++  transition-delay: 0ms;
++}
++
++#interactive-invite .ii__debug-hide{ display:none !important; }
++
++@media (max-width: 520px){
++  #interactive-invite .ii__hint{
++    left: 50%;
++    transform: translateX(-50%) translateY(8px) scale(0.98);
++    gap: 8px;
++  }
++  #interactive-invite[data-state="ready"] .ii__hint{
++    transform: translateX(-50%) translateY(0) scale(1);
++  }
++  #interactive-invite .ii__hint--tap{
++    top: 8%;
++  }
++  #interactive-invite .ii__hint--drag{
++    top: 34%;
++  }
++  #interactive-invite .ii__hint-arrow{
++    width: 44px;
++  }
++  #interactive-invite .ii__hint-text{
++    font-size: 18px;
++  }
++}
++
++@media (max-width: 740px){
++  #interactive-invite .ii__wrap{ padding: 0 16px; }
++  #interactive-invite .ii__stage{ min-height: clamp(380px,56vh,620px); }
++  #interactive-invite .ii__btn{ min-width: min(320px, 90vw); }
++
++  #interactive-invite[data-state="opening"] .ii__invite-inner,
++  #interactive-invite[data-state="revealed"] .ii__invite-inner,
++  #interactive-invite[data-state="ready"] .ii__invite-inner{
++    transform: scale(var(--ii-invite-scale-mobile));
++  }
++
++  @keyframes iiEnvelopeExit{
++    0%   { transform: translateX(0) rotate(0deg); opacity: 1; }
++    40%  { transform: translateX(0) rotate(90deg); opacity: 1; }
++    100% { transform: translateX(-60vw) rotate(90deg); opacity: 0; }
++  }
++}
 
