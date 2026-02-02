@@ -745,12 +745,23 @@ function initUGC(){
   refresh();
 }
 
+/* Arranque */
+document.addEventListener("DOMContentLoaded", ()=>{
+  initReveal();
+  initImgSwap();
+  initCountdown();
+  initQuintaModal();
+  initAccommodationCarousel();
+  initUGC();
+  initDaisyBackground();
+});
+
 function initDaisyBackground(){
   const layer = document.getElementById("daisy-layer");
   if(!layer) return;
 
   const MAX_FLOWERS = 12;
-  const INTERVAL_MS = 700;
+  const INTERVAL_MS = 650;
 
   const MIN_SIZE = 30;
   const MAX_SIZE = 84;
@@ -761,12 +772,12 @@ function initDaisyBackground(){
   const MIN_SPIN = 1.2;
   const MAX_SPIN = 3.4;
 
-  const MIN_OPACITY = 0.06;
-  const MAX_OPACITY = 0.14;
+  const MIN_OPACITY = 0.07;
+  const MAX_OPACITY = 0.16;
 
   const DRIFT_RANGE = 60;
   const SAFE_PADDING = 12;
-  const MAX_ATTEMPTS = 20;
+  const MAX_ATTEMPTS = 22;
 
   const alive = [];
 
@@ -847,7 +858,7 @@ function initDaisyBackground(){
 
     layer.appendChild(el);
 
-    const removeAfter = Math.ceil(life * 1000) + 300;
+    const removeAfter = Math.ceil(life * 1000) + 350;
 
     setTimeout(()=>{
       el.remove();
@@ -875,16 +886,6 @@ function initDaisyBackground(){
       if(!timer) timer = setInterval(tryCreate, INTERVAL_MS);
     }
   });
+
+  tryCreate();
 }
-
-
-/* Arranque */
-document.addEventListener("DOMContentLoaded", ()=>{
-  initReveal();
-  initImgSwap();
-  initCountdown();
-  initQuintaModal();
-  initAccommodationCarousel();
-  initUGC();
-  initDaisyBackground();
-});
