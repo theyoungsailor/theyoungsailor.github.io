@@ -1127,13 +1127,13 @@ function initDaisyBackground(){
   };
 
   preload([
-    "https://cdn.shopify.com/s/files/1/0818/0554/1723/files/envelope-front1.png?v=1769340601",
-    "https://cdn.shopify.com/s/files/1/0818/0554/1723/files/envelope-back-filled1.png?v=1769267591",
-    "https://cdn.shopify.com/s/files/1/0818/0554/1723/files/outer-front.png?v=1769338027",
-    "https://cdn.shopify.com/s/files/1/0818/0554/1723/files/inner-fron1.png?v=1769267589",
-    "https://cdn.shopify.com/s/files/1/0818/0554/1723/files/inner-back1.png?v=1769267590",
-    "https://cdn.shopify.com/s/files/1/0818/0554/1723/files/restart.png?v=1769338353",
-    "https://cdn.shopify.com/s/files/1/0818/0554/1723/files/arrow.png?v=1769340866"
+    "/images/envelope-front1.png",
+    "/images/envelope-back-filled1.png",
+    "/images/outer-front.png",
+    "/images/inner-fron1.png",
+    "/images/inner-back1.png",
+    "/images/restart.png",
+    "/images/arrow.png"
   ]);
 
   const goFront = () => {
