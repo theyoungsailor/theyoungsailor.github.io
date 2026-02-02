@@ -761,27 +761,31 @@ function initDaisyBackground(){
   if(!layer) return;
 
   const MAX_FLOWERS = 12;
-  const INTERVAL_MS = 650;
+  const INTERVAL_MS = 700;
 
-  const MIN_SIZE = 30;
-  const MAX_SIZE = 84;
+  const MIN_SIZE = 32;
+  const MAX_SIZE = 86;
 
-  const MIN_LIFE = 10;
-  const MAX_LIFE = 22;
+  const MIN_LIFE_MS = 6000;
+  const MAX_LIFE_MS = 14000;
 
-  const MIN_SPIN = 14;
-  const MAX_SPIN = 30;
+  const FADE_IN_MS = 900;
+  const FADE_OUT_MS = 1100;
 
-  const MIN_OPACITY = 0.07;
-  const MAX_OPACITY = 0.16;
+  const MIN_SPIN_S = 18;
+  const MAX_SPIN_S = 46;
 
-  const DRIFT_RANGE = 60;
+  const DRIFT_RANGE = 70;
   const SAFE_PADDING = 12;
   const MAX_ATTEMPTS = 22;
 
   const alive = [];
+  let timer = null;
+  let resolvedSrc = null;
 
-  function rand(min, max){ return Math.random() * (max - min) + min; }
+  function rand(min, max){
+    return Math.random() * (max - min) + min;
+  }
 
   function rectsOverlap(a, b){
     return !(
@@ -799,74 +803,79 @@ function initDaisyBackground(){
     return true;
   }
 
-  function inferBasePath(){
-    const path = window.location.pathname || "/";
-    if(path.endsWith("/")) return path;
-    const slash = path.lastIndexOf("/");
-    return slash >= 0 ? path.slice(0, slash + 1) : "/";
-  }
-
-  function loadImage(url){
+  function loadImageOnce(url){
     return new Promise((resolve, reject)=>{
       const img = new Image();
       img.decoding = "async";
-      img.onload = ()=>resolve(url);
-      img.onerror = ()=>reject(new Error("failed"));
+      img.onload = ()=> resolve(url);
+      img.onerror = ()=> reject(new Error("load failed"));
       img.src = url;
     });
   }
 
   async function resolveDaisySrc(){
-    const basePath = inferBasePath();
     const candidates = [
-      new URL("imagens/daisy.png", window.location.href).href,
-      new URL("./imagens/daisy.png", window.location.href).href,
-      window.location.origin + basePath + "imagens/daisy.png",
-      window.location.origin + "/imagens/daisy.png"
+      new URL("imagens/daisy.png", document.baseURI).href,
+      new URL("./imagens/daisy.png", document.baseURI).href,
+      "imagens/daisy.png",
+      "/imagens/daisy.png"
     ];
 
     for(const raw of candidates){
-      try {
-        await loadImage(raw);
-        console.info("[daisy] loaded:", raw);
+      try{
+        await loadImageOnce(raw);
         return raw;
-      } catch(e) {
-        const busted = raw + (raw.includes("?") ? "&" : "?") + "v=" + Date.now();
-        try {
-          await loadImage(busted);
-          console.info("[daisy] loaded (busted):", busted);
+      }catch(_){
+        try{
+          const busted = raw + (raw.includes("?") ? "&" : "?") + "v=" + Date.now();
+          await loadImageOnce(busted);
           return busted;
-        } catch(e2) {
-          console.warn("[daisy] failed:", raw);
+        }catch(__){
+          /* keep trying */
         }
       }
     }
 
-    console.warn("[daisy] png not found, using inline svg fallback");
-    return "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22c%22%20cx%3D%2250%25%22%20cy%3D%2250%25%22%20r%3D%2260%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23FFE39A%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23E7B94D%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Cg%20opacity%3D%220.98%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23EDE7D6%22%20stroke-width%3D%222%22%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2260%22%20cy%3D%2218%22%20rx%3D%2216%22%20ry%3D%2226%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2286%22%20cy%3D%2224%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%2835%2086%2024%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%22102%22%20cy%3D%2250%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%2870%20102%2050%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2294%22%20cy%3D%2278%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28110%2094%2078%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2266%22%20cy%3D%22100%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28145%2066%20100%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2238%22%20cy%3D%22100%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28215%2038%20100%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2218%22%20cy%3D%2278%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28250%2018%2078%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2216%22%20cy%3D%2250%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28290%2016%2050%29%22/%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2226%22%20cy%3D%2224%22%20rx%3D%2216%22%20ry%3D%2226%22%20transform%3D%22rotate%28325%2026%2024%29%22/%3E%0A%20%20%20%20%3C/g%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2258%22%20r%3D%2218%22%20fill%3D%22url%28%23c%29%22%20stroke%3D%22%23D7A73E%22%20stroke-width%3D%222%22/%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E";
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+        <g fill="none" stroke="rgba(146,170,151,0.55)" stroke-width="2">
+          <circle cx="32" cy="32" r="6" fill="rgba(241,236,206,0.95)" />
+          <path d="M32 10c6 0 10 5 10 11s-4 11-10 11-10-5-10-11 4-11 10-11z"/>
+          <path d="M54 32c0 6-5 10-11 10s-11-4-11-10 5-10 11-10 11 4 11 10z"/>
+          <path d="M32 54c-6 0-10-5-10-11s4-11 10-11 10 5 10 11-4 11-10 11z"/>
+          <path d="M10 32c0-6 5-10 11-10s11 4 11 10-5 10-11 10S10 38 10 32z"/>
+        </g>
+      </svg>
+    `.trim();
+
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   }
 
-  let DAISY_SRC = null;
-
-  async function boot(){
-    DAISY_SRC = await resolveDaisySrc();
-    start();
+  function start(){
+    if(timer) return;
+    timer = setInterval(tryCreate, INTERVAL_MS);
+    tryCreate();
   }
 
-  function makeDaisyEl(){
-    const el = document.createElement("span");
-    el.className = "daisy";
+  function stopAndClear(){
+    if(timer){
+      clearInterval(timer);
+      timer = null;
+    }
+    layer.innerHTML = "";
+    alive.length = 0;
+  }
 
-    const img = document.createElement("img");
-    img.className = "daisy__img";
-    img.alt = "";
-    img.setAttribute("aria-hidden","true");
-    img.decoding = "async";
-    img.loading = "eager";
-    img.src = DAISY_SRC;
-
-    el.appendChild(img);
-    return el;
+  function fadeOpacity(el, to, ms, easing){
+    if(el.animate){
+      el.animate(
+        [{ opacity: getComputedStyle(el).opacity }, { opacity: String(to) }],
+        { duration: ms, fill: "forwards", easing: easing || "ease" }
+      );
+      return;
+    }
+    el.style.transition = `opacity ${ms}ms ${easing || "ease"}`;
+    el.style.opacity = String(to);
   }
 
   function tryCreate(){
@@ -876,57 +885,102 @@ function initDaisyBackground(){
     const vh = window.innerHeight;
 
     const size = Math.round(rand(MIN_SIZE, MAX_SIZE));
-    const w = size + SAFE_PADDING;
-    const h = size + SAFE_PADDING;
+    const lifeMs = Math.round(rand(MIN_LIFE_MS, MAX_LIFE_MS));
+    const spinS = rand(MIN_SPIN_S, MAX_SPIN_S);
+
+    const holdMs = Math.max(500, lifeMs - FADE_IN_MS - FADE_OUT_MS);
+
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    const startRot = `${Math.round(rand(0, 360))}deg`;
+
+    const dxVal = Math.round(rand(-DRIFT_RANGE, DRIFT_RANGE));
+    const dyVal = Math.round(rand(-DRIFT_RANGE, DRIFT_RANGE));
 
     let placed = false;
-    let candidate = null;
+    let x = 0;
+    let y = 0;
+    let chosenRect = null;
 
-    for(let i=0;i<MAX_ATTEMPTS;i++){ 
-      const x = Math.round(rand(0, Math.max(0, vw - w)));
-      const y = Math.round(rand(0, Math.max(0, vh - h)));
-      candidate = { x, y, w, h };
-      if(canPlace(candidate)){ placed = true; break; }
+    for(let attempt = 0; attempt < MAX_ATTEMPTS; attempt++){
+      x = rand(0, Math.max(0, vw - size));
+      y = rand(0, Math.max(0, vh - size));
+
+      const candidate = {
+        x: x - SAFE_PADDING,
+        y: y - SAFE_PADDING,
+        w: size + SAFE_PADDING * 2,
+        h: size + SAFE_PADDING * 2
+      };
+
+      if(canPlace(candidate)){
+        alive.push(candidate);
+        chosenRect = candidate;
+        placed = true;
+        break;
+      }
     }
-    if(!placed || !candidate) return;
 
-    const life = rand(MIN_LIFE, MAX_LIFE).toFixed(2) + "s";
-    const spin = rand(MIN_SPIN, MAX_SPIN).toFixed(2) + "s";
-    const opacity = rand(MIN_OPACITY, MAX_OPACITY).toFixed(3);
-    const dir = Math.random() < 0.5 ? -1 : 1;
-    const startRot = Math.round(rand(0, 360)) + "deg";
-    const dx = Math.round(rand(-DRIFT_RANGE, DRIFT_RANGE)) + "px";
-    const dy = Math.round(rand(-DRIFT_RANGE, DRIFT_RANGE)) + "px";
+    if(!placed) return;
 
-    const el = makeDaisyEl();
-    el.style.setProperty("--size", size + "px");
-    el.style.setProperty("--x", candidate.x + "px");
-    el.style.setProperty("--y", candidate.y + "px");
-    el.style.setProperty("--dx", dx);
-    el.style.setProperty("--dy", dy);
-    el.style.setProperty("--life", life);
-    el.style.setProperty("--spin", spin);
-    el.style.setProperty("--opacity", opacity);
-    el.style.setProperty("--dir", dir);
+    const el = document.createElement("div");
+    el.className = "daisy";
+
+    el.style.setProperty("--size", `${size}px`);
+    el.style.setProperty("--life", `${lifeMs}ms`);
+    el.style.setProperty("--spin", `${spinS}s`);
+    el.style.setProperty("--x", `${x}px`);
+    el.style.setProperty("--y", `${y}px`);
+    el.style.setProperty("--dx", `${dxVal}px`);
+    el.style.setProperty("--dy", `${dyVal}px`);
+    el.style.setProperty("--dir", String(dir));
     el.style.setProperty("--start-rot", startRot);
 
+    const img = document.createElement("img");
+    img.className = "daisy__img";
+    img.alt = "";
+    img.decoding = "async";
+    img.loading = "eager";
+    img.src = resolvedSrc;
+    el.appendChild(img);
+
     layer.appendChild(el);
-    alive.push(candidate);
 
-    window.setTimeout(()=>{
-      if(el.parentNode) el.parentNode.removeChild(el);
-      const idx = alive.indexOf(candidate);
-      if(idx >= 0) alive.splice(idx, 1);
-    }, parseFloat(life) * 1000 + 80);
+    requestAnimationFrame(()=> fadeOpacity(el, 1, FADE_IN_MS, "ease-out"));
+
+    const tOut = setTimeout(()=>{
+      fadeOpacity(el, 0, FADE_OUT_MS, "ease-in");
+    }, FADE_IN_MS + holdMs);
+
+    const removeAfter = FADE_IN_MS + holdMs + FADE_OUT_MS + 80;
+
+    setTimeout(()=>{
+      clearTimeout(tOut);
+      el.remove();
+
+      if(chosenRect){
+        const idx = alive.indexOf(chosenRect);
+        if(idx >= 0) alive.splice(idx, 1);
+      }
+    }, removeAfter);
   }
 
-  function start(){
-    window.setInterval(()=>{
-      if(document.hidden) return;
-      tryCreate();
-    }, INTERVAL_MS);
-  }
+  (async ()=>{
+    resolvedSrc = await resolveDaisySrc();
+    start();
+  })();
 
-  boot();
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden){
+      stopAndClear();
+    }else{
+      if(!resolvedSrc){
+        (async ()=>{
+          resolvedSrc = await resolveDaisySrc();
+          start();
+        })();
+      }else{
+        start();
+      }
+    }
+  });
 }
-
