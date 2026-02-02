@@ -597,7 +597,7 @@ p,li,small,span,label{
   bottom:12px;
   padding:10px 12px;
   border-radius:14px;
-  background:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.85);
   border:1px solid var(--border);
   color:var(--ink);
   box-shadow:var(--shadow);
