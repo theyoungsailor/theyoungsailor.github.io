@@ -205,7 +205,7 @@ p,li,small,span,label{
   position:relative;
   inset:auto;
   opacity:1;
-  transform:scale(1,.9);
+  transform:scale(1,1);
   transform-origin:center;
   transition:transform .45s ease;
   will-change:transform;
