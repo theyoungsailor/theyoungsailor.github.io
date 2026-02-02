@@ -186,7 +186,7 @@ p,li,small,span,label{
 .img-swap .swap-overlay{
   width:auto;
   height:auto;
-  max-height:min(520px,52vh);
+  max-height:min(480px,48vh);
   object-fit:contain;
 }
 
