@@ -1076,7 +1076,6 @@ p,li,small,span,label{
   z-index:2;
 }
 
-/* A flor */
 .daisy{
   position:absolute;
   width:var(--size);
@@ -1112,39 +1111,31 @@ p,li,small,span,label{
   to{transform:rotate(calc(var(--start-rot) + (360deg * var(--dir))))}
 }
 
-to{
-    transform:translate3d(var(--x),var(--y),0) rotate(calc(var(--start-rot) + (360deg * var(--dir))));
-  }
-}
-
 @keyframes daisyDrift{
   0%{transform:translate3d(var(--x),var(--y),0)}
   100%{transform:translate3d(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy)),0)}
-}
-
-100%{
-    transform:translate3d(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy)),0) rotate(var(--start-rot));
-  }
 }
 
 @media (prefers-reduced-motion: reduce){
   .daisy{animation:none; opacity:.12}
   .daisy__img{animation:none}
 }
-}
 
-
+/* Botão Formulário: centrado no ecrã em mobile */
 @media (max-width:720px){
   .form-btn{
     display:flex;
-    margin:20px auto 0;
+    width:max-content;
+    justify-content:center;
+    margin:22px auto 0;
   }
 }
 
-
+/* Acomodação: reduzir apenas em desktop, sem mexer no comportamento mobile */
 @media (min-width:961px){
   .acc-carousel-wrap{
-    max-width:980px;
+    max-width:880px;
     margin:0 auto;
   }
 }
+
