@@ -602,6 +602,7 @@ p,li,small,span,label{
   color:var(--ink);
   box-shadow:var(--shadow);
   font-size:14px;
+  font-weight:700;
 }
 
 .acc-capacity-badge{
