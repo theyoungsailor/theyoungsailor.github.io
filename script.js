@@ -760,6 +760,13 @@ function initDaisyBackground(){
   const layer = document.getElementById("daisy-layer");
   if(!layer) return;
 
+  const daisyUrl = new URL("imagens/daisy.png", document.baseURI).href;
+  layer.style.setProperty("--daisy-url", `url("${daisyUrl}")`);
+
+  const preload = new Image();
+  preload.decoding = "async";
+  preload.src = daisyUrl;
+
   const MAX_FLOWERS = 12;
   const INTERVAL_MS = 650;
 
@@ -844,6 +851,8 @@ function initDaisyBackground(){
 
     const el = document.createElement("div");
     el.className = "daisy";
+
+    el.style.backgroundImage = `url("${daisyUrl}")`;
 
     el.style.setProperty("--size", `${size}px`);
     el.style.setProperty("--life", `${life}s`);
