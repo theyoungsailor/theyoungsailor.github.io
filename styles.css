@@ -8,7 +8,7 @@
 }
 
 :root{
-  --bg:#F1ECCE;
+  --bg:#transparent;
   --ink:#92AA97;
   --muted:rgba(146,170,151,.82);
   --muted-2:rgba(146,170,151,.66);
