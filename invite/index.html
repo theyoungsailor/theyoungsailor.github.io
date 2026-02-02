@@ -3,106 +3,102 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#F6E8A6" />
-  <title>Convite</title>
+  <meta name="theme-color" content="#ffffff" />
 
-  <link rel="stylesheet" href="invite.css">
-  <script src="invite.js" defer></script>
+  <title>Invite</title>
+  <meta name="description" content="Convite interativo. Virar, abrir e ver detalhes." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
-  <div id="daisy-layer" aria-hidden="true"></div>
-
-  <main class="page" aria-label="Convite interativo">
+  <main class="page">
     <section
       id="interactive-invite"
       class="ii"
       data-state="front"
-      data-details-url="http://ocasamento.website/"
-      aria-live="polite"
+      data-details-url="./casamento/index.html"
+      style="
+        --ii-max-w: 410px;
+        --ii-invite-scale: 0.92;
+        --ii-invite-scale-mobile: 0.90;
+        --ii-reveal-delay: 560ms;
+        --ii-btn-bg: #8fa394;
+        --ii-btn-bg-hover: #7e9686;
+        --ii-btn-text: #ffffff;
+        --ii-btn-disabled-bg: #c9cec9;
+        --ii-btn-disabled-text: #ffffff;
+        --ii-shadow: 0 22px 60px rgba(0,0,0,0.12);
+        --ii-shadow-soft: 0 14px 34px rgba(0,0,0,0.12);
+        --ii-shadow-layer: 0 18px 46px rgba(0,0,0,0.12);
+        --ii-radius: 999px;
+      "
     >
       <div class="ii__wrap">
-        <div class="ii__stage">
+        <div class="ii__stage" aria-live="polite">
           <div class="ii__stage-inner">
 
-            <div class="ii__envelope" aria-label="Envelope">
-              <div class="ii__flip ii__flip--envelope" data-envelope-flip>
+            <div class="ii__envelope" aria-label="Envelope animation">
+              <div class="ii__flip" data-envelope-flip>
                 <div class="ii__flip-face ii__flip-front">
-                  <img
-                    class="ii__img ii__img--envelope"
-                    src="../imagens/envelope-front1.png"
+                  <img class="ii__img ii__img--envelope"
+                    src="https://cdn.shopify.com/s/files/1/0818/0554/1723/files/envelope-front1.png?v=1769340601"
                     alt="Envelope frente"
-                    loading="eager"
-                    width="1200"
-                    height="1200"
-                    draggable="false"
-                  />
+                    loading="eager" width="1200" height="1200">
                 </div>
                 <div class="ii__flip-face ii__flip-back">
-                  <img
-                    class="ii__img ii__img--envelope"
-                    src="../imagens/envelope-back-filled1.png"
+                  <img class="ii__img ii__img--envelope"
+                    src="https://cdn.shopify.com/s/files/1/0818/0554/1723/files/envelope-back-filled1.png?v=1769267591"
                     alt="Envelope verso"
-                    loading="eager"
-                    width="1200"
-                    height="1200"
-                    draggable="false"
-                  />
+                    loading="eager" width="1200" height="1200">
                 </div>
               </div>
 
-              <img
-                class="ii__piece"
-                src="../imagens/envelope-piece.png"
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-                width="1200"
-                height="1200"
-                draggable="false"
-              />
+              <img class="ii__piece" src="" alt="" aria-hidden="true" loading="lazy" width="" height="">
             </div>
 
-            <div class="ii__invite" aria-label="Convite">
+            <div class="ii__invite" aria-label="Invitation reveal">
               <div class="ii__invite-inner" data-invite-root>
+                <div class="ii__hint ii__hint--drag" data-hint-drag aria-hidden="true">
+                  <img class="ii__hint-arrow ii__hint-arrow--drag"
+                    src="https://cdn.shopify.com/s/files/1/0818/0554/1723/files/arrow.png?v=1769340866"
+                    alt="" aria-hidden="true" loading="lazy" width="512" height="512">
+                  <div class="ii__hint-text">Mexe-me</div>
+                </div>
 
-                <div class="ii__invite-layer ii__invite-innercard" data-draggable="inner" role="group" aria-label="Convite interior">
-                  <div class="ii__flip ii__flip--card" data-card-flip>
-                    <div class="ii__flip-face ii__card-front">
-                      <img
-                        class="ii__img ii__img--inner"
-                        src="../imagens/inner-front1.png"
-                        alt="Convite interior frente"
-                        loading="eager"
-                        width="1200"
-                        height="1600"
-                        draggable="false"
-                      />
-                    </div>
-                    <div class="ii__flip-face ii__card-back">
-                      <img
-                        class="ii__img ii__img--inner"
-                        src="../imagens/inner-back1.png"
-                        alt="Convite interior verso"
-                        loading="eager"
-                        width="1200"
-                        height="1600"
-                        draggable="false"
-                      />
-                    </div>
-                  </div>
+                <div class="ii__hint ii__hint--tap" data-hint-tap aria-hidden="true">
+                  <img class="ii__hint-arrow ii__hint-arrow--tap"
+                    src="https://cdn.shopify.com/s/files/1/0818/0554/1723/files/arrow.png?v=1769340866"
+                    alt="" aria-hidden="true" loading="lazy" width="512" height="512">
+                  <div class="ii__hint-text">Carrega aqui</div>
                 </div>
 
                 <div class="ii__invite-layer ii__invite-outer" data-draggable="outer" role="group" aria-label="Convite exterior">
-                  <img
-                    class="ii__img ii__img--outer"
-                    src="../imagens/invite-composite.png"
+                  <img class="ii__img ii__img--outer"
+                    src="https://cdn.shopify.com/s/files/1/0818/0554/1723/files/outer-front.png?v=1769338027"
                     alt="Convite exterior"
-                    loading="eager"
-                    width="1200"
-                    height="1100"
-                    draggable="false"
-                  />
+                    loading="eager" width="1200" height="1100">
+                </div>
+
+                <div class="ii__invite-layer ii__invite-innercard" data-draggable="inner" role="group" aria-label="Convite interior">
+                  <div class="ii__card" data-inner-card>
+                    <div class="ii__card-face ii__card-front">
+                      <img class="ii__img ii__img--inner"
+                        src="https://cdn.shopify.com/s/files/1/0818/0554/1723/files/inner-fron1.png?v=1769267589"
+                        alt="Convite interior frente"
+                        loading="eager" width="1200" height="1600">
+                    </div>
+                    <div class="ii__card-face ii__card-back">
+                      <img class="ii__img ii__img--inner"
+                        src="https://cdn.shopify.com/s/files/1/0818/0554/1723/files/inner-back1.png?v=1769267590"
+                        alt="Convite interior verso"
+                        loading="eager" width="1200" height="1600">
+                    </div>
+                  </div>
                 </div>
 
               </div>
@@ -111,17 +107,21 @@
           </div>
         </div>
 
-        <div class="ii__controls" aria-label="Controlos">
+        <div class="ii__controls" aria-label="Controlos do convite">
           <button type="button" class="ii__btn" data-main-btn>
             <span class="ii__btn-label">Virar</span>
           </button>
 
           <button type="button" class="ii__restart" data-restart-btn aria-label="Reiniciar" hidden>
-            <span class="ii__restart-dot" aria-hidden="true"></span>
+            <img class="ii__restart-icon"
+              src="https://cdn.shopify.com/s/files/1/0818/0554/1723/files/restart.png?v=1769338353"
+              alt="" aria-hidden="true" loading="lazy" width="256" height="256">
           </button>
         </div>
       </div>
     </section>
   </main>
+
+  <script src="./invite.js" defer></script>
 </body>
 </html>
