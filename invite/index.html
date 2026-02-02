@@ -1,1 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Convite | Sara & Tiago</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="daisy-layer" aria-hidden="true"></div>
 
+    <div class="page">
+      <header class="hero">
+        <p class="hero__eyebrow">Convite</p>
+        <h1 class="hero__title">Sara & Tiago</h1>
+        <p class="hero__subtitle">Uma celebração íntima junto ao mar, com tudo o que amamos.</p>
+      </header>
+
+      <section class="interactive" aria-label="Convite interativo">
+        <div class="interactive__intro">
+          <h2>O nosso convite</h2>
+          <p>Descobre o convite, abre as páginas e explora os detalhes da celebração.</p>
+        </div>
+
+        <div id="interactive-invite" class="ii" data-state="front" data-details-url="https://desportosnauticosalvor.com/pages/casamento">
+          <div class="ii__wrap">
+            <div class="ii__stage" aria-live="polite">
+              <div class="ii__stage-inner">
+                <div class="ii__envelope" aria-label="Envelope animation">
+                  <div class="ii__flip" data-envelope-flip>
+                    <div class="ii__flip-face ii__flip-front">
+                      <img
+                        class="ii__img ii__img--envelope"
+                        src="../imagens/envelope-front1.png"
+                        alt="Envelope frente"
+                        loading="eager"
+                        width="1200"
+                        height="1200"
+                      />
+                    </div>
+                    <div class="ii__flip-face ii__flip-back">
+                      <img
+                        class="ii__img ii__img--envelope"
+                        src="../imagens/envelope-back-filled1.png"
+                        alt="Envelope verso"
+                        loading="eager"
+                        width="1200"
+                        height="1200"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ii__invite" aria-label="Invitation reveal">
+                  <div class="ii__invite-inner" data-invite-root>
+                    <div class="ii__hint ii__hint--drag" data-hint-drag aria-hidden="true">
+                      <img
+                        class="ii__hint-arrow ii__hint-arrow--drag"
+                        src="../imagens/arrow.png"
+                        alt=""
+                        aria-hidden="true"
+                        loading="lazy"
+                        width="512"
+                        height="512"
+                      />
+                      <div class="ii__hint-text">Mexe-me</div>
+                    </div>
+
+                    <div class="ii__hint ii__hint--tap" data-hint-tap aria-hidden="true">
+                      <img
+                        class="ii__hint-arrow ii__hint-arrow--tap"
+                        src="../imagens/arrow.png"
+                        alt=""
+                        aria-hidden="true"
+                        loading="lazy"
+                        width="512"
+                        height="512"
+                      />
+                      <div class="ii__hint-text">Carrega aqui</div>
+                    </div>
+
+                    <div class="ii__invite-layer ii__invite-outer" data-draggable="outer" role="group" aria-label="Convite exterior">
+                      <img
+                        class="ii__img ii__img--outer"
+                        src="../imagens/outer-front2.png"
+                        alt="Convite exterior"
+                        loading="eager"
+                        width="1200"
+                        height="1100"
+                      />
+                    </div>
+
+                    <div class="ii__invite-layer ii__invite-innercard" data-draggable="inner" role="group" aria-label="Convite interior">
+                      <div class="ii__card" data-inner-card>
+                        <div class="ii__card-face ii__card-front">
+                          <img
+                            class="ii__img ii__img--inner"
+                            src="../imagens/inner-fron1.png.png"
+                            alt="Convite interior frente"
+                            loading="eager"
+                            width="1200"
+                            height="1600"
+                          />
+                        </div>
+                        <div class="ii__card-face ii__card-back">
+                          <img
+                            class="ii__img ii__img--inner"
+                            src="../imagens/inner-back1.png"
+                            alt="Convite interior verso"
+                            loading="eager"
+                            width="1200"
+                            height="1600"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ii__controls" aria-label="Controlos do convite">
+              <button type="button" class="ii__btn" data-main-btn>
+                <span class="ii__btn-label">Virar</span>
+              </button>
+
+              <button type="button" class="ii__restart" data-restart-btn aria-label="Reiniciar" hidden>
+                <img
+                  class="ii__restart-icon"
+                  src="../imagens/outline1.png"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  width="256"
+                  height="256"
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="details">
+        <header class="section-header">
+          <h2>Quando & Onde</h2>
+          <p>Uma tarde tranquila, com o pôr do sol como testemunha.</p>
+        </header>
+        <div class="details__grid">
+          <div>
+            <h3>Data</h3>
+            <p>20 de Setembro de 2025</p>
+          </div>
+          <div>
+            <h3>Hora</h3>
+            <p>17:30</p>
+          </div>
+          <div>
+            <h3>Local</h3>
+            <p>Quinta da Falésia, Alvor</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="accommodation">
+        <header class="section-header section-header--center">
+          <h2>Alojamento</h2>
+          <p>Escolhemos opções próximas e confortáveis para vos receber.</p>
+        </header>
+        <div class="accommodation__grid">
+          <article>
+            <img src="../imagens/yo-house.png" alt="Yo House" />
+            <h3>Yo House</h3>
+            <p>Uma opção moderna e tranquila a poucos minutos da Quinta.</p>
+          </article>
+          <article>
+            <img src="../imagens/mercure.png" alt="Mercure" />
+            <h3>Mercure</h3>
+            <p>Conforto contemporâneo com vista privilegiada para o mar.</p>
+          </article>
+          <article>
+            <img src="../imagens/crown-plaze.png" alt="Crown Plaza" />
+            <h3>Crown Plaza</h3>
+            <p>Um clássico elegante para quem procura uma estadia premium.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="gallery">
+        <header class="section-header section-header--center">
+          <h2>Galeria</h2>
+        </header>
+        <div class="gallery__grid">
+          <img src="../imagens/original2.jpg" alt="Paisagem de Alvor" />
+          <img src="../imagens/fin1.png" alt="Detalhe floral" />
+          <img src="../imagens/fin3.png" alt="Detalhe minimal" />
+          <img src="../imagens/fin5.png" alt="Tons suaves" />
+        </div>
+      </section>
+
+      <section class="quinta">
+        <header class="section-header section-header--center">
+          <h2>Quinta da Falésia</h2>
+          <p>Um lugar sereno com vista aberta para o oceano.</p>
+        </header>
+        <div class="quinta__content">
+          <div>
+            <h3>Chegada</h3>
+            <p>Estacionamento disponível no local, com sinalização dedicada.</p>
+          </div>
+          <div>
+            <h3>Dress Code</h3>
+            <p>Tons claros e tecidos leves, para acompanhar a luz do fim de tarde.</p>
+          </div>
+          <div>
+            <h3>Após o jantar</h3>
+            <p>Música ao vivo e um brinde sob as estrelas.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <p>Com carinho, aguardamos por vocês.</p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
