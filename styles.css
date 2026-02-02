@@ -296,6 +296,11 @@ p,li,small,span,label{
   width:max-content;
 }
 
+/* Hero CTA spacing */
+.two-col-section .right-half .form-btn{
+  margin-top:clamp(16px,2.4vw,28px);
+}
+
 .details-section{
   padding:clamp(24px,6vw,64px) 18px;
 }
@@ -988,6 +993,14 @@ p,li,small,span,label{
   transform:translateY(0);
 }
 
+
+@media (min-width:981px){
+  .acc-carousel-wrap{
+    max-width:980px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+}
 @media (max-width:980px){
   .two-col-section{
     grid-template-columns:1fr;
@@ -1063,7 +1076,7 @@ p,li,small,span,label{
   position:absolute;
   width:var(--size);
   height:var(--size);
-  background-image:url("/imagens/daisy.webp");
+  background-image:var(--daisy-url, none);
   background-size:contain;
   background-repeat:no-repeat;
   background-position:center;
@@ -1108,10 +1121,4 @@ p,li,small,span,label{
     animation:none;
     opacity:.10;
   }
-}
-.daisy{
-  opacity: 1 !important;
-  background-color: rgba(255,0,0,.18) !important;
-  outline: 2px solid rgba(255,0,0,.6) !important;
-  background-image: none !important;
 }
