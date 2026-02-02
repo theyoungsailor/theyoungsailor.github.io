@@ -1238,6 +1238,9 @@ main {
   justify-content:center;
 
   overflow:visible;
+
+  --ov-scale: 0.93;
+  --ov-shift-y: 2%;
 }
 
 .img-swap > .swap-base{
@@ -1249,7 +1252,7 @@ main {
   height:100%;
 
   object-fit:contain;
-  object-position:center;
+  object-position:center bottom;
 
   display:block;
 }
@@ -1267,16 +1270,21 @@ main {
   height:100%;
 
   object-fit:contain;
-  object-position:center;
+  object-position:center bottom;
 
   display:block;
+
+  transform: translateY(var(--ov-shift-y)) scale(var(--ov-scale));
+  transform-origin: center bottom;
 }
 
-/* Mobile */
 @media (max-width:620px){
   .img-swap{
     width:min(420px,96%);
     height:clamp(220px,40vh,340px);
+
+    --ov-scale: 0.92;
+    --ov-shift-y: 3%;
   }
 }
 
