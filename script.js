@@ -718,4 +718,137 @@ document.addEventListener("DOMContentLoaded", ()=>{
   initQuintaModal();
   initAccommodationCarousel();
   initUGC();
+  initDaisyBackground();
+
 });
+function initDaisyBackground(){
+  const layer = document.getElementById("daisy-layer");
+  if(!layer) return;
+
+  const MAX_FLOWERS = 12;
+  const INTERVAL_MS = 700;
+
+  const MIN_SIZE = 30;
+  const MAX_SIZE = 84;
+
+  const MIN_LIFE = 1;
+  const MAX_LIFE = 5;
+
+  const MIN_SPIN = 1.2;
+  const MAX_SPIN = 3.4;
+
+  const MIN_OPACITY = 0.06;
+  const MAX_OPACITY = 0.14;
+
+  const DRIFT_RANGE = 60;
+  const SAFE_PADDING = 12;
+  const MAX_ATTEMPTS = 20;
+
+  const alive = [];
+
+  function rand(min, max){
+    return Math.random() * (max - min) + min;
+  }
+
+  function rectsOverlap(a, b){
+    return !(
+      a.x + a.w <= b.x ||
+      b.x + b.w <= a.x ||
+      a.y + a.h <= b.y ||
+      b.y + b.h <= a.y
+    );
+  }
+
+  function canPlace(candidate){
+    for(const r of alive){
+      if(rectsOverlap(candidate, r)) return false;
+    }
+    return true;
+  }
+
+  function tryCreate(){
+    if(layer.childElementCount >= MAX_FLOWERS) return;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const size = Math.round(rand(MIN_SIZE, MAX_SIZE));
+    const life = rand(MIN_LIFE, MAX_LIFE);
+    const spin = rand(MIN_SPIN, MAX_SPIN);
+    const opacity = rand(MIN_OPACITY, MAX_OPACITY);
+
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    const startRot = `${Math.round(rand(0, 360))}deg`;
+
+    const dxVal = Math.round(rand(-DRIFT_RANGE, DRIFT_RANGE));
+    const dyVal = Math.round(rand(-DRIFT_RANGE, DRIFT_RANGE));
+
+    let placed = false;
+    let x = 0;
+    let y = 0;
+
+    for(let attempt = 0; attempt < MAX_ATTEMPTS; attempt++){
+      x = rand(0, Math.max(0, vw - size));
+      y = rand(0, Math.max(0, vh - size));
+
+      const candidate = {
+        x: x - SAFE_PADDING,
+        y: y - SAFE_PADDING,
+        w: size + SAFE_PADDING * 2,
+        h: size + SAFE_PADDING * 2
+      };
+
+      if(canPlace(candidate)){
+        alive.push(candidate);
+        placed = true;
+        break;
+      }
+    }
+
+    if(!placed) return;
+
+    const el = document.createElement("div");
+    el.className = "daisy";
+
+    el.style.setProperty("--size", `${size}px`);
+    el.style.setProperty("--life", `${life}s`);
+    el.style.setProperty("--spin", `${spin}s`);
+    el.style.setProperty("--opacity", `${opacity}`);
+    el.style.setProperty("--x", `${x}px`);
+    el.style.setProperty("--y", `${y}px`);
+    el.style.setProperty("--dx", `${dxVal}px`);
+    el.style.setProperty("--dy", `${dyVal}px`);
+    el.style.setProperty("--dir", String(dir));
+    el.style.setProperty("--start-rot", startRot);
+
+    layer.appendChild(el);
+
+    const removeAfter = Math.ceil(life * 1000) + 300;
+
+    setTimeout(()=>{
+      el.remove();
+
+      const targetX = x - SAFE_PADDING;
+      const targetY = y - SAFE_PADDING;
+      const targetW = size + SAFE_PADDING * 2;
+
+      const idx = alive.findIndex(r =>
+        r.x === targetX && r.y === targetY && r.w === targetW
+      );
+      if(idx >= 0) alive.splice(idx, 1);
+    }, removeAfter);
+  }
+
+  let timer = setInterval(tryCreate, INTERVAL_MS);
+
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden){
+      clearInterval(timer);
+      timer = null;
+      layer.innerHTML = "";
+      alive.length = 0;
+    }else{
+      if(!timer) timer = setInterval(tryCreate, INTERVAL_MS);
+    }
+  });
+}
