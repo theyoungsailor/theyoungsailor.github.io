@@ -877,6 +877,7 @@ function initDaisyBackground(){
   });
 }
 
+
 /* Arranque */
 document.addEventListener("DOMContentLoaded", ()=>{
   initReveal();
