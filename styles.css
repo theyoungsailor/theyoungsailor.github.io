@@ -1066,59 +1066,72 @@ p,li,small,span,label{
   position:fixed;
   inset:0;
   pointer-events:none;
-  z-index:1;
+  z-index:4;
   overflow:hidden;
 }
 
 /* Garantir que o conteúdo fica acima das flores */
 .wedding-page main{
   position:relative;
-  z-index:2;
+  z-index:10;
 }
 
+/* Cada flor */
 .daisy{
   position:absolute;
   width:var(--size);
   height:var(--size);
+  left:0;
+  top:0;
   opacity:0;
   transform:translate3d(var(--x),var(--y),0);
   transform-origin:center;
   will-change:transform,opacity;
   filter:drop-shadow(0 8px 16px rgba(0,0,0,.08));
-  animation:
-    daisyFade var(--life) ease-in-out forwards,
-    daisyDrift var(--life) ease-in-out forwards;
+  animation:daisyDrift var(--life) ease-in-out forwards;
 }
 
 .daisy__img{
   width:100%;
   height:100%;
+  object-fit:contain;
   display:block;
-  transform-origin:center;
-  will-change:transform;
   animation:daisySpin var(--spin) linear infinite;
-}
-
-@keyframes daisyFade{
-  0%{opacity:0}
-  15%{opacity:var(--opacity)}
-  85%{opacity:var(--opacity)}
-  100%{opacity:0}
+  transform:rotate(var(--start-rot));
+  transform-origin:center;
+  pointer-events:none;
+  user-select:none;
 }
 
 @keyframes daisySpin{
-  from{transform:rotate(var(--start-rot))}
-  to{transform:rotate(calc(var(--start-rot) + (360deg * var(--dir))))}
+  from{
+    transform:rotate(var(--start-rot));
+  }
+  to{
+    transform:rotate(calc(var(--start-rot) + (360deg * var(--dir))));
+  }
 }
 
 @keyframes daisyDrift{
-  0%{transform:translate3d(var(--x),var(--y),0)}
-  100%{transform:translate3d(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy)),0)}
+  0%{
+    transform:translate3d(var(--x),var(--y),0);
+  }
+  100%{
+    transform:translate3d(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy)),0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce){
-  .daisy{animation:none; opacity:.12}
-  .daisy__img{animation:none}
+  .daisy{
+    animation:none;
+    opacity:.25;
+  }
+
+  .daisy__img{
+    animation:none;
+  }
+}
+.daisy__img{animation:none}
 }
 
 /* Botão Formulário: centrado no ecrã em mobile */
