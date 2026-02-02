@@ -3,7 +3,6 @@
 
   const CONFIG = {
     detailsUrl: "../pages/casamento",
-
     assets: {
       envelopeFront: "../imagens/envelope-front1.png",
       envelopeBack: "../imagens/envelope-back-filled1.png",
@@ -13,18 +12,15 @@
       innerBack: "../imagens/inner-back1.png",
       restartIcon: "../imagens/restart.png",
       hintArrow: "../imagens/arrow.png",
-
       daisies: [
         "../imagens/daisy.png",
         "../imagens/daisy1.png",
         "../imagens/daisy2.png"
       ]
     },
-
     daisy: {
       maxOnScreen: 18,
       spawnEveryMs: 420,
-      lifespanMs: 5200,
       fadeInMs: 700,
       holdMs: 2600,
       fadeOutMs: 900,
@@ -95,7 +91,7 @@
     const active = [];
     const positions = [];
 
-    function rectsFarEnough(x, y, dist){
+    function farEnough(x, y, dist){
       for(let i = 0; i < positions.length; i++){
         const p = positions[i];
         const dx = p.x - x;
@@ -134,7 +130,7 @@
       while(tries < 14){
         x = rand(pad, w - pad);
         y = rand(pad, h - pad);
-        if(rectsFarEnough(x, y, CONFIG.daisy.avoidDistancePx)) break;
+        if(farEnough(x, y, CONFIG.daisy.avoidDistancePx)) break;
         tries += 1;
       }
 
@@ -196,7 +192,6 @@
       }
 
       requestAnimationFrame(tick);
-
       active.push({ el, deadAt });
     }
 
@@ -233,11 +228,12 @@
 
     const detailsUrl = root.getAttribute("data-details-url") || "";
 
-    const mainBtn = root.querySelector("[data-main-btn]");
-    const mainLabel = root.querySelector(".ii__btn-label");
+    const envelopeBtn = root.querySelector("[data-envelope-btn]");
+    const envelopeWrap = root.querySelector(".ii__envelope");
+    const openBtn = root.querySelector("[data-open-btn]");
+    const openLabel = openBtn ? openBtn.querySelector(".ii__btn-label") : null;
     const restartBtn = root.querySelector("[data-restart-btn]");
 
-    const envelopeWrap = root.querySelector(".ii__envelope");
     const outerLayer = root.querySelector('[data-draggable="outer"]');
     const innerLayer = root.querySelector('[data-draggable="inner"]');
 
@@ -246,26 +242,12 @@
 
     const envelopePiece = root.querySelector("[data-envelope-piece]");
 
-    if(envelopePiece){
-      const pieceUrl = envelopePiece.getAttribute("src") || "";
-      const absPiece = pieceUrl ? absUrl(pieceUrl) : "";
-      if(absPiece){
-        const img = new Image();
-        img.onload = () => {};
-        img.onerror = () => { envelopePiece.classList.add("ii__debug-hide"); };
-        img.src = absPiece;
-      }else{
-        envelopePiece.classList.add("ii__debug-hide");
-      }
-    }
-
     const keyDrag = "ii_invite_hint_drag_done";
     const keyTap  = "ii_invite_hint_tap_done";
 
     let state = "front";
     let countdownTimer = null;
     let countdownLeft = 0;
-
     const openTimers = [];
 
     function clearOpenTimers(){
@@ -280,19 +262,6 @@
       if(next === "ready") applyHintVisibility();
     }
 
-    function setButton(label, disabled){
-      if(mainLabel) mainLabel.textContent = label;
-      if(!mainBtn) return;
-
-      if(disabled){
-        mainBtn.classList.add("is-disabled");
-        mainBtn.setAttribute("disabled", "disabled");
-      }else{
-        mainBtn.classList.remove("is-disabled");
-        mainBtn.removeAttribute("disabled");
-      }
-    }
-
     function clearCountdown(){
       if(countdownTimer){
         clearInterval(countdownTimer);
@@ -300,19 +269,32 @@
       }
     }
 
+    function setButton(label, disabled){
+      if(openLabel) openLabel.textContent = label;
+      if(!openBtn) return;
+
+      if(disabled){
+        openBtn.classList.add("is-disabled");
+        openBtn.setAttribute("disabled", "disabled");
+      }else{
+        openBtn.classList.remove("is-disabled");
+        openBtn.removeAttribute("disabled");
+      }
+    }
+
     function startCountdown(seconds){
       clearCountdown();
       countdownLeft = seconds;
-      setButton(`Detalhes (${countdownLeft})`, true);
+      setButton(`Details (${countdownLeft})`, true);
 
       countdownTimer = setInterval(() => {
         countdownLeft -= 1;
         if(countdownLeft <= 0){
           clearCountdown();
-          setButton("Detalhes", false);
+          setButton("Details", false);
           return;
         }
-        setButton(`Detalhes (${countdownLeft})`, true);
+        setButton(`Details (${countdownLeft})`, true);
       }, 1000);
     }
 
@@ -360,14 +342,38 @@
       applyHintVisibility(true);
     }
 
+    function ensureEnvelopePiece(){
+      if(!envelopePiece) return;
+      const pieceUrl = envelopePiece.getAttribute("src") || "";
+      if(!pieceUrl){
+        envelopePiece.classList.add("ii__debug-hide");
+        return;
+      }
+      const img = new Image();
+      img.onerror = () => { envelopePiece.classList.add("ii__debug-hide"); };
+      img.src = absUrl(pieceUrl);
+    }
+
+    function showOpenButton(show){
+      if(!openBtn) return;
+      openBtn.hidden = !show;
+    }
+
+    function setEnvelopeFlipped(flipped){
+      if(!envelopeWrap) return;
+      envelopeWrap.classList.toggle("is-flipped", !!flipped);
+    }
+
     function goFront(){
       clearOpenTimers();
       clearCountdown();
 
       setState("front");
+      setEnvelopeFlipped(false);
+      showOpenButton(false);
 
       if(envelopeWrap){
-        envelopeWrap.classList.remove("is-flipped", "ii__debug-hide", "ii__envelope--behind");
+        envelopeWrap.classList.remove("ii__debug-hide", "ii__envelope--behind");
         envelopeWrap.style.animation = "none";
         void envelopeWrap.offsetHeight;
         envelopeWrap.style.animation = "";
@@ -376,20 +382,25 @@
       resetTransforms();
       resetHintsOnRestart();
 
-      setButton("Virar", false);
+      setButton("Open", false);
       if(restartBtn) restartBtn.hidden = true;
     }
 
     function goBack(){
       setState("back");
-      if(envelopeWrap) envelopeWrap.classList.add("is-flipped");
-      setButton("Abrir", false);
+      setEnvelopeFlipped(true);
+      setButton("Open", false);
+      showOpenButton(true);
       if(restartBtn) restartBtn.hidden = true;
     }
 
     function openEnvelope(){
       clearOpenTimers();
+
       setState("opening");
+      showOpenButton(true);
+      setButton("Details (10)", true);
+
       if(restartBtn) restartBtn.hidden = false;
 
       startCountdown(10);
@@ -412,29 +423,19 @@
           envelopeWrap.classList.add("ii__debug-hide");
           envelopeWrap.classList.remove("ii__envelope--behind");
           setState("ready");
+          showOpenButton(true);
+          setButton("Details", false);
         }, 1500));
       }else{
         setState("ready");
+        showOpenButton(true);
+        setButton("Details", false);
       }
     }
 
     function goDetails(){
       if(!detailsUrl) return;
       window.location.href = detailsUrl;
-    }
-
-    if(mainBtn){
-      mainBtn.addEventListener("click", () => {
-        if(mainBtn.hasAttribute("disabled")) return;
-
-        if(state === "front"){ goBack(); return; }
-        if(state === "back"){ openEnvelope(); return; }
-        if(state === "ready"){ goDetails(); return; }
-      });
-    }
-
-    if(restartBtn){
-      restartBtn.addEventListener("click", () => goFront());
     }
 
     const DRAG_THRESHOLD = 5;
@@ -522,6 +523,53 @@
       });
     }
 
+    function wireEnvelopeToggle(){
+      if(!envelopeBtn) return;
+
+      envelopeBtn.addEventListener("click", () => {
+        if(state === "opening" || state === "revealed" || state === "ready") return;
+        if(state === "front"){ goBack(); return; }
+        if(state === "back"){ goFront(); return; }
+      });
+
+      envelopeBtn.addEventListener("keydown", (e) => {
+        if(e.key === "Enter" || e.key === " "){
+          e.preventDefault();
+          envelopeBtn.click();
+        }
+      });
+    }
+
+    function wireOpenButton(){
+      if(!openBtn) return;
+
+      openBtn.addEventListener("click", () => {
+        if(openBtn.hasAttribute("disabled")) return;
+
+        if(state === "back"){
+          openEnvelope();
+          return;
+        }
+
+        if(state === "ready"){
+          goDetails();
+          return;
+        }
+      });
+
+      openBtn.addEventListener("keydown", (e) => {
+        if(e.key === "Enter" || e.key === " "){
+          e.preventDefault();
+          openBtn.click();
+        }
+      });
+    }
+
+    function wireRestart(){
+      if(!restartBtn) return;
+      restartBtn.addEventListener("click", () => goFront());
+    }
+
     makeDraggable(outerLayer, {
       allowTapFlip: false,
       onFirstDrag: () => markDragDone()
@@ -537,6 +585,8 @@
       }
     });
 
+    ensureEnvelopePiece();
+
     preload([
       CONFIG.assets.envelopeFront,
       CONFIG.assets.envelopeBack,
@@ -547,6 +597,10 @@
       CONFIG.assets.restartIcon,
       CONFIG.assets.hintArrow
     ]);
+
+    wireEnvelopeToggle();
+    wireOpenButton();
+    wireRestart();
 
     goFront();
   }
