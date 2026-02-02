@@ -1056,7 +1056,7 @@ p,li,small,span,label{
 }
 @media (max-width:620px){
   .img-swap .swap-overlay{
-    transform:scale(.92,.78);
+    transform:scale(.92);
   }
 }
 
