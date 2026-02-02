@@ -294,6 +294,7 @@ p,li,small,span,label{
   box-shadow:var(--shadow);
   transition:transform .2s ease, filter .2s ease;
   width:max-content;
+  margin-top:18px;
 }
 
 .right-half .form-btn{
@@ -1080,19 +1081,23 @@ p,li,small,span,label{
   position:absolute;
   width:var(--size);
   height:var(--size);
-  background-image:url("imagens/daisy.png");
-  background-size:contain;
-  background-repeat:no-repeat;
-  background-position:center;
   opacity:0;
-  transform:translate3d(var(--x),var(--y),0) rotate(var(--start-rot));
+  transform:translate3d(var(--x),var(--y),0);
   transform-origin:center;
   will-change:transform,opacity;
   filter:drop-shadow(0 8px 16px rgba(0,0,0,.08));
   animation:
     daisyFade var(--life) ease-in-out forwards,
-    daisySpin var(--spin) linear infinite,
     daisyDrift var(--life) ease-in-out forwards;
+}
+
+.daisy__img{
+  width:100%;
+  height:100%;
+  display:block;
+  transform-origin:center;
+  will-change:transform;
+  animation:daisySpin var(--spin) linear infinite;
 }
 
 @keyframes daisyFade{
@@ -1103,26 +1108,43 @@ p,li,small,span,label{
 }
 
 @keyframes daisySpin{
-  from{
-    transform:translate3d(var(--x),var(--y),0) rotate(var(--start-rot));
-  }
-  to{
+  from{transform:rotate(var(--start-rot))}
+  to{transform:rotate(calc(var(--start-rot) + (360deg * var(--dir))))}
+}
+
+to{
     transform:translate3d(var(--x),var(--y),0) rotate(calc(var(--start-rot) + (360deg * var(--dir))));
   }
 }
 
 @keyframes daisyDrift{
-  0%{
-    transform:translate3d(var(--x),var(--y),0) rotate(var(--start-rot));
-  }
-  100%{
+  0%{transform:translate3d(var(--x),var(--y),0)}
+  100%{transform:translate3d(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy)),0)}
+}
+
+100%{
     transform:translate3d(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy)),0) rotate(var(--start-rot));
   }
 }
 
 @media (prefers-reduced-motion: reduce){
-  .daisy{
-    animation:none;
-    opacity:.10;
+  .daisy{animation:none; opacity:.12}
+  .daisy__img{animation:none}
+}
+}
+
+
+@media (max-width:720px){
+  .form-btn{
+    display:flex;
+    margin:20px auto 0;
+  }
+}
+
+
+@media (min-width:961px){
+  .acc-carousel-wrap{
+    max-width:980px;
+    margin:0 auto;
   }
 }
